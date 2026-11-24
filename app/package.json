@@ -1,0 +1,26 @@
+{
+  "name": "scene-space-designer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "场景空间设计器（Vue 3 外壳 + spatial-core 内核 + Spring Boot / MySQL 后端）",
+  "scripts": {
+    "assets": "node scripts/sync-assets.mjs && node scripts/gen-doors.mjs",
+    "predev": "npm run assets",
+    "dev": "vite",
+    "prebuild": "npm run assets",
+    "build": "vite build",
+    "preview": "vite preview --port 4180 --strictPort",
+    "test": "node --test --import ./test/alias.mjs && npm --prefix ../spatial-core test"
+  },
+  "dependencies": {
+    "qrcode-generator": "^2.0.4",
+    "three": "^0.186.0",
+    "vue": "^3.5.43",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.9",
+    "vite": "^8.3.0"
+  }
+}

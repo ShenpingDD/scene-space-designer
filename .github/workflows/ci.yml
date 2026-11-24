@@ -1,0 +1,112 @@
+# CI —— 场景空间设计器
+#
+# 一条命令的验收：`bash tools/verify/gate.sh`（内核单测 / 前端单测 / 后端测试 / 引号铁律 / 前端构建）。
+# 托管 runner 用 mysql:8.0 服务容器把后端测试也跑起来 —— 库里跑的是仓库自带的 Flyway 迁移，
+# 所以 CI 同时验证了「迁移能从一个空库一路升到最新版」。
+#
+# 口令一律不进仓库：库是临时容器（空口令），会话口令由 `tools/server/set-password.sh` 现场设置。
+#
+# 另有一个独立的 `secrets` 作业：用 gitleaks 扫**整段提交历史**有没有混进密钥。
+# 它不是多一道仪式 —— 公开仓的历史一旦推出去就抹不掉，密钥泄漏只能靠改密钥止损。
+
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# 与 application.yml 的 `serverTimezone=Asia/Shanghai` 对齐：库里存的是本地时间，
+# 托管 runner 默认 UTC 会让「创建时间」「按时间夹区间」两类契约测试整体偏 8 小时。
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  fast:
+    name: gate (kernel + app + java + quotes + build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          TZ: Asia/Shanghai
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_DATABASE: spatial_design
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: setup java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: install frontend deps
+        run: npm ci --prefix app
+
+      # `serverTimezone=Asia/Shanghai` 只影响驱动解释，不会改 MySQL 会话；
+      # 托管容器的库默认 UTC，会让 CURRENT_TIMESTAMP 与 LocalDateTime 读写偏 8 小时。
+      # 用偏移量（不依赖 mysql 时区表）把服务端会话对齐到 +08:00。
+      - name: align MySQL timezone with app
+        run: >-
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot
+          -e "SET GLOBAL time_zone = '+08:00'; SELECT @@global.time_zone;"
+
+      - name: gate
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: "3306"
+          DB_NAME: spatial_design
+          DB_USER: root
+          DB_PASSWORD: ""
+        run: bash tools/verify/gate.sh
+
+  secrets:
+    name: secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 脚本自带「下官方二进制 → 跑 detect --all」；下不下来会 exit 2（环境不满足），
+      # 而 2 在这里**要红**：没验过就等于没验，不允许绿着过关。
+      - name: gitleaks
+        run: bash tools/verify/check-secrets.sh

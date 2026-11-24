@@ -1,0 +1,1152 @@
+/* 场景空间设计器 · R3 外壳样式
+   设计口径：浅色工业风 + 工业蓝主色；平面图用 SVG（矢量、可打印、不吃 GPU） */
+
+:root {
+  --brand: #005caf;
+  --brand-dark: #04628f;
+  --brand-soft: #e6f2f9;
+  --ink: #16232c;
+  --ink-2: #4a5c68;
+  --ink-3: #5b6c7a;      /* 提示文字。**这个值有下限**：#7b8d99 在浅底上只有 2.99（实测），一整片提示都不达 AA ——
+                            改前请在 `tools/verify/verify-contrast.py` 里量一遍（它量的底是 `--line-2`，最暗的那个）。 */
+  --wall-2d: #cddce6;    /* 2D 墙体填充色：**内墙外墙共用这一个**（以前内墙填得更深 #8fa8b7，
+                            两块墙看起来像来自两个系统 —— 用户实测反馈）。内墙改靠描边区分。 */
+  --wall-2d-op: 1;       /* 墙体外观档位在 2D 的表达（实心 1 / 半透明 .6 / 很透 .35）。
+                            值由**内核**算（`wallOpacityOf`），PlanView 用 style 绑定挂上来 ——
+                            界面不许自己写这个数。 */
+  /* 矩形柱（docs/101 §5.4）：2D/3D/右栏共用这一组；组件里不写品牌色 hex。 */
+  --col-2d: var(--wall-2d);
+  --col-2d-hover: #dbe6ee;
+  --col-2d-sel: var(--brand-soft);
+  --col-edge: var(--panel);
+  --col-edge-sel: var(--brand);
+  --col-bad-fill: var(--bad-soft);
+  --col-bad-edge: var(--bad);
+  --col-conflict-edge: var(--warn);
+  --col-shadow: rgb(22 35 44 / 12%);
+  --col-dim: var(--brand);
+
+  --line: #d8e2e9;
+  --line-2: #eaf0f4;
+  --bg: #f2f5f7;
+  --panel: #ffffff;
+  --ok: #1a9e6a;
+  --warn: #c77700;
+  --bad: #cf3b46;
+  --warn-ink: #8a5300;    /* 提醒态【文字】：跟 --bad-ink 一个路子 —— --warn 当文字只有 3.16 */
+  --ok-ink: #0c6b45;      /* 通过态【文字】：--ok 当文字只有 3.42 */
+  --bad-ink: #93222c;     /* 危险态【文字】：--bad 是亮红，当正文色对比度不够（原站 11/11 组不达 AA 就是这类坑） */
+  --bad-soft: #fdeef0;    /* 危险态【浅底】：hover 与问题条目的底色 */
+  --warn-soft: #fffaf2;   /* 提醒态【浅底】：退出失败那条与常驻告知条的底色 */
+  /* 动线颜色槽（docs/97 §5.3；P3 用 getComputedStyle 读 --route-1..6 当贴花颜色）。
+     只在这里定义一份；2D/3D/图例/右栏都读它，**不把颜色写进 state**。颜色不是唯一通道：
+     线型按同一序号、站点字母与编号是主信息。 */
+  --route-1: var(--brand);
+  --route-2: var(--ok);
+  --route-3: var(--warn);
+  /* 4–6 是上面 1–3 与 --ink-2 的预混值，落成具体色值而不是 color-mix：
+     P3 用 getComputedStyle(...).getPropertyValue('--route-N') 直接喂 Three.Color，
+     Chrome 对 color-mix 只返回 token 串（不会解析成 rgb），三维那侧会解析失败。 */
+  --route-4: #1c5c94;
+  --route-5: #2d8469;
+  --route-6: #936c2c;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgb(22 35 44 / 6%), 0 8px 24px rgb(22 35 44 / 6%);
+  /* 设计端首页 / 我的全部方案（docs/109）：卡片默认极淡、hover 加深一档。
+     只新增这两个 token，品牌色/文字色仍走现有变量 —— 主题色只有一个出处。 */
+  --shadow-card: 0 1px 2px rgb(22 35 44 / 3%), 0 6px 16px rgb(22 35 44 / 5%);
+  --shadow-card-hover: 0 2px 4px rgb(22 35 44 / 4%), 0 10px 24px rgb(22 35 44 / 8%);
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app { height: 100%; margin: 0; }
+
+body {
+  font: 14px/1.55 "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font: inherit; cursor: pointer; }
+input, select { font: inherit; color: inherit; }
+
+/* ---------- 结构 ---------- */
+
+.shell {
+  display: grid;
+  grid-template-rows: 56px 1fr;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.body {
+  /* 左右栏宽度：**字面量是默认档**（docs/84 的 280 / 1fr / 320，判据也钉着它），
+     另配一份变量给"收起"用 —— 收起 = 把对应一侧的宽度换成 0，列还在、栏也还在。
+     为什么不删列 / 不用 display:none：栏里的滚动位置与折叠记忆（右栏 spatial.designer.rail）
+     不会因为收一下就丢；剩下的网格项也不会错位。 */
+  --rail-l: 280px;
+  --rail-r: 320px;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 320px;
+  min-height: 0;
+}
+.body.is-left-closed { grid-template-columns: 0 minmax(0, 1fr) var(--rail-r); }
+.body.is-right-closed { grid-template-columns: var(--rail-l) minmax(0, 1fr) 0; }
+.body.is-left-closed.is-right-closed { grid-template-columns: 0 minmax(0, 1fr) 0; }
+/* 收起的栏：宽度 0、看不见；`inert` 由模板给（Tab 与读屏都进不去） */
+.body.is-left-closed > .rail--left,
+.body.is-right-closed > .rail--right {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  visibility: hidden;
+}
+
+.rail {
+  overflow: hidden;
+  padding: 12px;
+  background: var(--bg);
+  border-inline: 1px solid var(--line-2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rail--left { border-left: 0; }
+.rail--right { border-right: 0; overflow-y: auto; }
+/* 右栏是 flex 纵向列：卡片默认会被压扁（flex-shrink:1），内容永远"刚好装下"、
+   整栏就永远滚不动。这里让每张卡按自身高度排，滚动交给 .rail--right。 */
+.rail--right > .card { flex: none; }
+
+.stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px;
+  overflow: hidden;
+  display: flex;
+}
+.stage > * { flex: 1 1 auto; min-width: 0; }
+
+/* ── 画布边缘的竖向把手（左右栏各自收起）────────────────────────
+   贴在 `.stage` 的左右边缘：栏一收，画布就铺到那一侧，把手正好成了"展开"的入口。
+   20×56 的胶囊、chevron 图标；宽度压在 20px，是为了不压住画布本身的边缘操作。 */
+.rail-handle {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  width: 20px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink-3);
+  box-shadow: var(--shadow);
+  transition: color .14s ease, background .14s ease, border-color .14s ease;
+}
+.rail-handle--left { left: 0; border-left: 0; border-radius: 0 10px 10px 0; }
+.rail-handle--right { right: 0; border-right: 0; border-radius: 10px 0 0 10px; }
+.rail-handle:hover { color: var(--brand-dark); background: var(--brand-soft); border-color: var(--brand); }
+.rail-handle:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.rail-handle svg { display: block; transition: transform .16s ease; }
+/* 收起时箭头翻面：左把手 → 指向右（展开），右把手 → 指向左（展开） */
+.rail-handle.is-flipped svg { transform: rotate(180deg); }
+
+/* ---------- 顶栏 ---------- */
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.hd-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.hd-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+.brand__mark { display: inline-flex; color: var(--brand); flex: none; }
+/* 房子 = 返回首页的真按钮：默认长得跟原来的图标一样，hover/focus 才透出"可点" */
+.brand__mark--btn {
+  position: relative;
+  border: 0;
+  background: transparent;
+  padding: 5px;
+  margin: -5px 0 -5px -5px;   /* 视觉位置不变，命中区变大 */
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+}
+.brand__mark--btn:hover { background: var(--brand-soft); }
+.brand__mark--btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.brand__mark--btn svg { display: block; }
+/* 自定义提示（title 之外的"看得见"的一版）：hover / 键盘聚焦都出 */
+.brand__tip {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .14s ease;
+}
+.brand__mark--btn:hover .brand__tip,
+.brand__mark--btn:focus-visible .brand__tip { opacity: 1; }
+.brand { display: flex; align-items: baseline; gap: 8px; }
+.brand b { font-size: 16px; letter-spacing: .2px; }
+.header .spacer { flex: 1; }
+
+/* 方案名 · 版本 + 保存状态：文字是主信息，圆点只作辅助 */
+.doc { display: flex; align-items: center; gap: 8px; min-width: 0; }
+/* 方案名（点击原地改名）+ 版本徽标：文字是主信息，铅笔只在 hover/focus 时出现 */
+.doc__namebox { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.doc__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 280px;
+  min-width: 0;
+  padding: 3px 6px;
+  margin-left: -6px;   /* 文字起点不因按钮内边距而右移 */
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.doc__name:hover { background: var(--brand-soft); border-color: var(--line); }
+.doc__name:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.doc__nametext { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc__pencil { flex: none; opacity: 0; color: var(--ink-3); transition: opacity .12s ease; }
+.doc__name:hover .doc__pencil,
+.doc__name:focus-visible .doc__pencil { opacity: 1; }
+.doc__nameinput {
+  width: min(280px, 34vw);
+  padding: 2px 6px;
+  margin-left: -6px;
+  border: 1px solid var(--brand);
+  border-radius: 7px;
+  background: var(--panel);
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+}
+.doc__rev {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--line-2);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.doc__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--line-2);
+  color: var(--ink-2);
+  font-size: 11px;
+  white-space: nowrap;
+  flex: none;
+}
+.doc__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); }
+.doc__status--is-saved { background: #e7f6ef; color: var(--ok-ink); }
+.doc__status--is-saved .doc__dot { background: var(--ok); }
+.doc__status--is-dirty { background: var(--warn-soft); color: var(--warn-ink); }
+.doc__status--is-dirty .doc__dot { background: var(--warn); }
+.doc__status--is-none .doc__dot { background: var(--ink-3); }
+.doc__hint {
+  flex: none;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* 账号块（顶栏右侧）：设计端顶栏、首页、我的方案、维护端共用同一个组件。
+   头像、显示名、角色、下拉箭头合成一个按钮（docs/83 §七）：显示名在上，角色缩小放在它下方；
+   点开只有「退出登录」一项。 */
+.acct { position: relative; display: inline-flex; align-items: center; }
+.acct__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+.acct__chip:hover { background: var(--bg); }
+.acct__chip:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.acct__avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 600;
+}
+.acct__who {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  line-height: 1.2;
+}
+.acct__name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.acct__role { font-size: 11px; color: var(--ink-3); }
+.acct__caret { font-size: 12px; color: var(--ink-3); }
+.acct__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  width: 160px;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.acct__item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.acct__item:hover:not(:disabled) { background: var(--brand-soft); color: var(--brand-dark); }
+.acct__item:disabled { opacity: .55; cursor: not-allowed; }
+.acct__trouble { font-size: 12px; color: var(--bad-ink); }
+
+/* ---------- 通用控件 ---------- */
+
+.btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 7px;
+  padding: 6px 11px;
+  transition: .15s;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand-dark); background: var(--brand-soft); }
+.btn:disabled { opacity: .42; cursor: not-allowed; }
+.btn--primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn--primary:hover:not(:disabled) { background: var(--brand-dark); border-color: var(--brand-dark); color: #fff; }
+.btn--block { width: 100%; justify-content: center; }
+.btn--mini { padding: 2px 8px; font-size: 11px; border-radius: 6px; }
+.btn--danger { color: var(--bad-ink); }
+.btn--danger:hover:not(:disabled) { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+
+/* ── 顶栏「更多」菜单 ───────────────────────────────────────────────
+   低频操作收进来，顶栏只留天天要点的。遮罩铺满视口、**点空白即关** ——
+   用户点空白的意思就是"算了"，不该逼他再点一次按钮。 */
+.more { position: relative; display: inline-flex; }
+.more__mask { position: fixed; inset: 0; z-index: 40; }
+/* 遮罩铺满整屏，按钮必须在它之上 —— 这样"再点一次按钮"仍然是一次正常 toggle，
+   而不是"点空白关闭"。 */
+.more > .btn { position: relative; z-index: 42; }
+/* 兜底：展开态由 `:has()` 兜住 —— 就算将来某次改模板忘了 `v-if`，菜单也不会再常驻
+   （常驻的代价不只是"点了没反应"，还有"一块看不见的浮层吞掉下面的点击"）。 */
+.more:has(> .btn[aria-expanded="false"]) .more__menu { display: none; }
+.more__menu {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 41;
+  min-width: 178px; padding: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.more__menu button {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 7px 10px; border: 0; border-radius: 7px; background: none;
+  font: inherit; color: var(--ink); text-align: left; cursor: pointer;
+}
+.more__menu button:hover { background: var(--brand-soft); color: var(--brand-dark); }
+.more__menu button.is-danger { color: var(--bad-ink); }
+.more__menu button.is-danger:hover { background: var(--bad-soft); }
+.more__menu hr { margin: 4px 6px; border: 0; border-top: 1px solid var(--line-2); }
+.more__key { font-size: 11px; color: var(--ink-3); }
+.btn--icon { padding: 6px 9px; }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; background: #fff; padding: 6px 12px; color: var(--ink-2); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--brand); color: #fff; }
+.seg button:disabled { opacity: .4; cursor: not-allowed; }
+
+.field { display: grid; gap: 4px; }
+.field > label { font-size: 12px; color: var(--ink-3); }
+.field input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+}
+.field input:focus { outline: 2px solid var(--brand-soft); border-color: var(--brand); }
+
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.row--3 { grid-template-columns: repeat(3, 1fr); }
+.stack { display: grid; gap: 8px; }
+
+/* ---------- 卡片 / 分组 ---------- */
+
+.card {
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: #fff;
+  overflow: hidden;
+}
+.card > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  letter-spacing: .3px;
+  background: #fbfdfe;
+}
+.card > header .spacer { flex: 1; }
+.card > .card-body { padding: 12px; display: grid; gap: 8px; }
+
+.hint { color: var(--ink-3); font-size: 12px; margin: 0; }
+.hint b { color: var(--ink-2); }
+
+/* ---------- 型号卡（紧凑版：每张 3 行短文本，4 张合起来约 240 px）---------- */
+
+.product {
+  display: grid;
+  grid-template-columns: 5px 52px 1fr auto;   /* 色标 · 缩略图 · 信息 · 放入按钮 */
+  gap: 9px;
+  align-items: center;
+  padding: 7px 9px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: #fff;
+  transition: .15s;
+}
+.product:hover { border-color: var(--brand); box-shadow: var(--shadow); }
+/* 色标从 46×46 的方块改成一条窄色带：省下的横向空间全让给文字，纵向也矮了一半 */
+.product .swatch { align-self: stretch; width: 5px; border-radius: 3px; background: currentColor; opacity: .8; }
+.product-main { min-width: 0; display: grid; gap: 1px; line-height: 1.35; }
+.product-top { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.product b { font-size: 13px; white-space: nowrap; }
+/* 型号名可能很长（如 DEMO-FZ-25C）：一律省略号，完整值挂 title */
+.product .meta { color: var(--ink-3); font-size: 11px; font-family: var(--mono);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.product .dim { color: var(--ink-3); font-size: 11px; font-family: var(--mono);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.product .size-note { color: var(--warn-ink); font-size: 11px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.product .size-note.is-bad { color: var(--bad-ink); }
+/* 行高逐个钉住：全局行高偏大（为中文正文可读性），三行文本会白白多出 30 px */
+.product b, .product .meta, .product .dim, .product .size-note { line-height: 1.3; }
+.product .btn { padding: 5px 10px; line-height: 1.1; }
+
+/* ---------- 平面图 ---------- */
+
+.plan-wrap {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  /* 画布上的拖拽（画墙 / 拖设备 / 转门）一律自己接管指针 —— 不禁止选中，
+     拖动时浏览器就会去选中画面上的文字，表现为"画不了墙"（首次上手实测反馈）。
+     输入框不在 .plan-wrap 里，不受影响。 */
+  user-select: none;
+  -webkit-user-select: none;
+  /* 画布要真的"填满"容器 —— 以前 .plan 是 height:auto，SVG 高度由 viewBox 宽高比反推，
+     于是容器底部空出 107 px 白条（首次上手实测反馈里"看不到全貌"的错觉之一）。
+     这里定下高度链：.plan-wrap 撑满 .stage（grid 行高已确定）→ 工具条/画布/图例竖向排。 */
+  height: 100%;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 平移中：光标必须"抓起来"。必须 !important 盖住设备上的 move 光标 ——
+   否则拖到设备上光标又变回"移动"，用户会以为自己在拖设备（手势与反馈必须一致）。 */
+.plan-wrap.is-panning,
+.plan-wrap.is-panning .plan,
+.plan-wrap.is-panning .plan * { cursor: grabbing !important; }
+
+/* 画墙模式：光标必须变 —— 否则用户根本不知道自己已经进了模式（首次上手实测反馈） */
+.plan-wrap.is-drawing,
+.plan-wrap.is-drawing .plan { cursor: crosshair; }
+.plan {
+  display: block;
+  width: 100%;
+  /* flex:1 + min-height:0 = "把这行的剩余高度全给我"，并把 SVG 的固有高度踢出局 */
+  flex: 1 1 auto;
+  min-height: 0;
+  touch-action: none;
+  /* 平面图单位：viewBox 是像素，几何在 <g class="world" scale(64)> 里 —— 组内**所有长度都是米**。
+     --u = "1 px 折合多少用户单位"（= 1 / 64，即 1 / PX_PER_M）。想写"2 像素的描边"就写 calc(2 * var(--u))。
+     单位必须写 px：在 SVG 里 px **就是**用户单位（这正是上面那些坑的根源），
+     而 font-size / stroke-width 不接受纯数字 —— 写成 calc(11 * 0.015625) 会被当成非法值丢掉，
+     字号会回退到默认 16 用户单位 = 16 米（比不修还糟）。
+
+     同一个根因踩了三个坑（分两批才修完）：
+       stroke-width: 2       → 2 米 = 128 px，设备边框比设备本身还宽，整图像色块
+       font-size: 11px       → 11 米，实测文字包围盒 4171×919 px，整图被巨字糊满
+       stroke-dasharray: 4 3 → 4 米/3 米，虚线看着像实线（等于没画）
+     还有个**反向坑**：披上 vector-effect: non-scaling-stroke 之后，内联的米（画墙预览线
+     stroke-width="0.06"）会变成 0.06 px → 直接看不见。所以不再用 vector-effect，只留 --u。
+
+     内联属性里那些数（门铰链点 r=0.045、画墙预览线 0.06 / 0.2 0.12）本来就是米，不用动。 */
+  --u: 0.015625px;
+}
+.plan .grid-line { stroke: #e7eef3; stroke-width: calc(1 * var(--u)); }
+.plan .grid-line--major { stroke: #d6e2ea; }
+.plan .floor { fill: #fbfdfe; }
+/* 2D 墙体：内墙与外墙**一模一样**（用户实测反馈：内墙的实心/半透明/很透必须与外墙面同）。
+   档位用 fill-opacity 表达 —— 描边一律不透明，于是形状、可点范围、选中态都不受档位影响
+   （不然「很透」的墙就没法点了）。`wall-int` 这个类现在只承担**交互**差异（可点、可选中），
+   不再承担任何视觉差异。 */
+.plan .wall-ext,
+.plan .wall-int { fill: var(--wall-2d); fill-opacity: var(--wall-2d-op); cursor: pointer; }
+/* 外墙：45° 斜纹 + 两端 T 端头。斜纹只表达"这是外墙"，不是第二种材质；
+   颜色仍走同一个墙体变量，档位（实心/半透/很透）由 fill-opacity 继续负责。 */
+.plan .wall-ext-hatch path { stroke: var(--ink-3); stroke-width: .018; opacity: .55; }
+.plan .wall-ext-hatch { fill: url(#wall-ext-hatch); pointer-events: none; }
+.plan .wall-ext-cap {
+  fill: none; stroke: var(--ink-2); stroke-width: calc(2.2 * var(--u));
+  stroke-linecap: square; pointer-events: none;
+}
+.plan .wall-ext-hatch.is-selected { opacity: .35; }
+.plan .wall-ext-cap.is-selected { stroke: var(--brand-dark); }
+/* 接角块：两根墙交汇的公共端点。三维一直有、平面以前没有 —— 缺口就在这儿。
+   画在墙体**下面**（见模板顺序）：选中/悬停把墙涂成品牌色时不会露出一块灰的。 */
+.plan .wall-fill { fill: var(--wall-2d); fill-opacity: var(--wall-2d-op); pointer-events: none; }
+.plan .wall-int:hover,
+.plan .wall-ext:hover { fill: var(--brand); fill-opacity: 1; }
+.plan .wall-int.is-selected,
+.plan .wall-ext.is-selected { fill: var(--brand-dark); fill-opacity: 1; }
+/* 短墙命中带：可见墙身只有 12cm，0.1m 的墙几乎点不中（用户实测）。
+   透明描边把可点范围扩到 0.44m；pointer-events: stroke = 只按描边命中，不挡墙内/墙外。
+   ⚠️ 这里的 0.44 是**米**：这条 path 在 scale(64) 的世界组里，不是屏幕像素。 */
+/* ---------------- 矩形柱（P2 2D）---------------- */
+/* 正常柱与墙同色，靠 1 px 白描边把嵌墙柱从墙里「抠」出来；选中/非法只换令牌，不写 hex。 */
+.plan .column-body {
+  fill: var(--col-2d);
+  stroke: var(--col-edge);
+  stroke-width: calc(1.5 * var(--u));
+  cursor: pointer;
+  transition: fill .12s ease, stroke .12s ease;
+}
+.plan .column-body:hover { fill: var(--col-2d-hover); stroke: var(--col-edge-sel); }
+.plan .column-body.is-selected {
+  fill: var(--col-2d-sel);
+  stroke: var(--col-edge-sel);
+  stroke-width: calc(2 * var(--u));
+}
+.plan .column-body.is-invalid {
+  fill: var(--col-bad-fill);
+  stroke: var(--col-bad-edge);
+  stroke-width: calc(1.5 * var(--u));
+  stroke-dasharray: calc(4 * var(--u)) calc(3 * var(--u));
+}
+.plan .column-selected-outline {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: calc(2 * var(--u));
+  pointer-events: none;
+}
+.plan .column-handle-hit { fill: var(--panel); fill-opacity: .001; cursor: pointer; pointer-events: fill; }
+.plan .column-handle {
+  fill: var(--panel);
+  stroke: var(--brand);
+  stroke-width: calc(1.5 * var(--u));
+  pointer-events: none;
+}
+.plan .column-handle-group:hover .column-handle { fill: var(--brand-soft); stroke-width: calc(2 * var(--u)); }
+.plan .column-size, .plan .column-tag {
+  font-family: var(--mono);
+  font-size: calc(11 * var(--u));
+  fill: var(--col-dim);
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: calc(3 * var(--u));
+  pointer-events: none;
+}
+.plan .column-tag { font-size: calc(10 * var(--u)); fill: var(--brand-dark); }
+.plan .column-preview { pointer-events: none; }
+.plan .column-preview-body {
+  fill: var(--brand-soft);
+  fill-opacity: .45;
+  stroke: var(--brand);
+  stroke-width: calc(1.5 * var(--u));
+  stroke-dasharray: calc(4 * var(--u)) calc(3 * var(--u));
+}
+.plan .column-preview.is-bad .column-preview-body {
+  fill: var(--col-bad-fill);
+  stroke: var(--col-bad-edge);
+}
+.plan .column-preview-reason {
+  font-size: calc(11 * var(--u));
+  fill: var(--bad-ink);
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: calc(3 * var(--u));
+}
+
+.plan .wall-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 0.44;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+/* ---------- 房间层（M1 多房间）----------
+   房面画在**墙下面**：它只是"这是哪一间"的底色，墙体与设备才是内容。
+   颜色只用 CSS 变量；面积/形心/名字全部来自内核 `rooms.js`，这里不写任何数字。 */
+.plan .room { fill: var(--brand-soft); fill-opacity: .6; stroke: none; cursor: pointer; }
+.plan .room:hover { fill-opacity: .95; }
+.plan .room.is-selected { fill: var(--brand); fill-opacity: .22; }
+/* 窄缝（两面墙贴太近挤出来的缝）：**不藏**，只是淡一点 —— 列表里还会标「窄缝」 */
+.plan .room.is-sliver { fill-opacity: .3; }
+
+.plan .room-labels { pointer-events: none; }
+.plan .room-name { fill: var(--ink-2); font-size: calc(11 * var(--u)); font-weight: 600; }
+.plan .room-name.is-selected { fill: var(--brand-dark); }
+.plan .room-area { fill: var(--ink-3); font-weight: 400; }
+
+/* 画房 / 切分预览：虚线画"会加出这条墙"。失败态（切不开 / 超上限）改危险色 ——
+   预览自己会说"这样不行"，而不是让用户拖完才知道。 */
+.plan .preview-wall {
+  fill: none; stroke: var(--brand); stroke-width: calc(2 * var(--u));
+  stroke-dasharray: calc(6 * var(--u)) calc(4 * var(--u)); stroke-linecap: round;
+}
+.plan .room-preview.is-bad .preview-wall,
+.plan .split-preview.is-bad .preview-wall,
+.plan .preview.is-bad .preview-wall { stroke: var(--bad); }
+/* 画墙预览的角色徽标 / 长度 / 非法原因；以及"场景会扩到哪儿"的 ghost 矩形。
+   这些文字都在 world 组里，字号用 --u 换算成像素。 */
+.plan .preview-role {
+  fill: var(--ink-2); font-size: calc(10 * var(--u)); font-weight: 600;
+  paint-order: stroke; stroke: var(--panel); stroke-width: calc(3 * var(--u)); pointer-events: none;
+}
+.plan .preview-role.is-ext { fill: var(--brand-dark); }
+.plan .preview-reason {
+  fill: var(--bad); font-size: calc(10 * var(--u)); font-weight: 600;
+  paint-order: stroke; stroke: var(--panel); stroke-width: calc(3 * var(--u)); pointer-events: none;
+}
+.plan .preview-overlap {
+  fill: var(--warn); font-size: calc(10 * var(--u)); font-weight: 600;
+  paint-order: stroke; stroke: var(--panel); stroke-width: calc(3 * var(--u)); pointer-events: none;
+}
+.plan .preview-ghost {
+  fill: none; stroke: var(--ink-3); stroke-width: calc(1.4 * var(--u));
+  stroke-dasharray: calc(5 * var(--u)) calc(3 * var(--u)); pointer-events: none;
+}
+
+.plan-wrap.is-room .plan, .plan-wrap.is-room .plan *,
+.plan-wrap.is-split .plan, .plan-wrap.is-split .plan * { cursor: crosshair; }
+
+/* 窄缝小标（房间列表里）与提醒句 —— 只标不藏 */
+.chip {
+  display: inline-block; padding: 0 5px; border-radius: 999px; font-size: 10px; line-height: 15px;
+  border: 1px solid var(--line); color: var(--ink-3);
+}
+.chip--warn { color: var(--warn-ink); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); background: color-mix(in srgb, var(--warn) 12%, #fff); }
+.hint--warn { color: var(--warn-ink); }
+/* 2D 设备：画布里**不再使用目录分类色**。设备本体统一深中性描边 + 浅中性填充；
+   分类色只留在左栏型号卡（它是“这是什么品类”，不是“这台设备是什么状态”）。
+   前脸用更深的中性色且更粗，提示朝向，但不参与状态表达。 */
+.plan .item-body {
+  fill: var(--line); fill-opacity: .45;
+  stroke: var(--ink-2); stroke-width: calc(2.2 * var(--u)); cursor: move;
+}
+.plan .item:hover .item-body { stroke: var(--ink); }
+.plan .item.is-selected .item-body {
+  fill: var(--brand-soft); fill-opacity: .55;
+  stroke: var(--brand); stroke-width: calc(3.2 * var(--u));
+}
+.plan .item-select-ring {
+  fill: none; stroke: var(--brand); stroke-width: calc(1.2 * var(--u));
+  stroke-dasharray: calc(5 * var(--u)) calc(3 * var(--u)); pointer-events: none;
+}
+.plan .item-front { stroke: var(--ink); stroke-width: calc(3 * var(--u)); stroke-linecap: round; }
+.plan .item.is-selected .item-front { stroke: var(--brand-dark); }
+.plan .item-label { font-family: var(--mono); font-size: calc(11 * var(--u)); fill: var(--ink-2); text-anchor: middle; pointer-events: none; }
+.plan .item-id { font-family: var(--mono); font-size: calc(10 * var(--u)); fill: var(--ink-3); text-anchor: middle; pointer-events: none; }
+.plan .item-bad { fill: none; stroke: var(--bad); stroke-width: calc(2.4 * var(--u)); stroke-dasharray: calc(5 * var(--u)) calc(4 * var(--u)); }
+.plan .door-arc { fill: var(--brand); fill-opacity: .12; stroke: var(--brand); stroke-width: calc(1.5 * var(--u)); stroke-dasharray: calc(4 * var(--u)) calc(3 * var(--u)); }
+.plan .door-open { stroke: var(--ink-2); }
+/* 开门净空分级（规则 7）：平面图直接说"这扇门用不用得上"。
+   默认（lv-na）= 原来那身蓝，型号没门数据时不假装有结论。
+   线型是第二通道：warn 长虚线、bad 密虚线；整台设备的本体边框不跟着变色。 */
+.plan .item.lv-ok .door-arc { fill: var(--ok); fill-opacity: .14; stroke: var(--ok); }
+.plan .item.lv-warn .door-arc {
+  fill: var(--warn); fill-opacity: .16; stroke: var(--warn);
+  stroke-dasharray: calc(6 * var(--u)) calc(2 * var(--u));
+}
+.plan .item.lv-bad .door-arc {
+  fill: var(--bad); fill-opacity: .18; stroke: var(--bad);
+  stroke-width: calc(2 * var(--u)); stroke-dasharray: calc(2 * var(--u)) calc(2 * var(--u));
+}
+.plan .item.lv-ok .door-hinge-dot { stroke: var(--ok); }
+.plan .item.lv-warn .door-hinge-dot { stroke: var(--warn); stroke-width: calc(2.2 * var(--u)); }
+.plan .item.lv-bad .door-hinge-dot { stroke: var(--bad); stroke-width: calc(3 * var(--u)); }
+.plan .item.lv-ok .door-open { stroke: var(--ok); }
+.plan .item.lv-warn .door-open { stroke: var(--warn); stroke-width: calc(3.5 * var(--u)); }
+.plan .item.lv-bad .door-open { stroke: var(--bad); stroke-width: calc(4 * var(--u)); }
+.plan .item.lv-bad .door-closed { stroke: var(--bad); }
+
+/* 图例 */
+.plan-legend {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  flex: none;
+  padding: 8px 12px 10px; font-size: 11px; color: var(--ink-3);
+}
+.plan-legend .lg { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.plan-legend .lg-sep { flex: 1 1 12px; }
+.plan-legend .sw { width: 14px; height: 10px; border-radius: 2px; display: inline-block; }
+.plan-legend .sw--body { background: #cfe3ef; border: 1px solid var(--brand); }
+.plan-legend .sw--hinge { width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--brand); }
+.plan-legend .sw--arc { background: var(--brand-soft); border: 1px dashed var(--brand); }
+.plan-legend .sw--closed { height: 0; border-top: 2px dashed var(--ink-3); border-radius: 0; }
+/* 门洞（W1）：墙上的缺口 —— 虚线表示"开口"（与"开门扇形"的虚线口径一致） */
+.plan-legend .sw--opening { background: var(--brand-soft); border: 1px dashed var(--brand-dark); }
+.plan-legend .sw--window { background: var(--panel); border: 1px solid var(--brand-dark); box-shadow: inset 0 0 0 2px var(--brand-soft); }
+.plan-legend .sw--ok { background: color-mix(in srgb, var(--ok) 16%, #fff); border: 1px solid var(--ok); }
+.plan-legend .sw--warn { background: color-mix(in srgb, var(--warn) 16%, #fff); border: 1px solid var(--warn); }
+.plan-legend .sw--bad { background: color-mix(in srgb, var(--bad) 16%, #fff); border: 1px solid var(--bad); }
+/* 门的三件套：闭合轮廓（淡虚线）、闭合门扇位置、铰链（点或线）与开门后的门扇 */
+/* 门洞（W1）：缺口是墙自己断开的（`scene2d` 把构件按洞切了）；这里画门框线与净宽读数。
+   命中区是一块透明多边形 —— 洞口那里是地板色，没有可点的东西，
+   不铺一块透明命中区就只能"点门框那两根线"才选得中（手指更不可能）。 */
+.plan .opening-hit { fill: transparent; cursor: pointer; }
+.plan .opening-hit:hover { fill: var(--brand); fill-opacity: .18; }
+.plan .opening-hit.is-selected { fill: var(--brand); fill-opacity: .3; }
+.plan .opening-jamb { fill: none; stroke: var(--brand-dark); stroke-width: calc(2 * var(--u)); pointer-events: none; }
+/* 窗（W2）：三线符号 —— 两条窗框线（虚线，区别于门的实线）+ 一条沿墙中线的窗线。
+   墙身**没有断开**（那儿走不过去），所以平面图只能靠这三条线认它。 */
+.plan .opening-jamb.is-window { stroke-dasharray: calc(2.2 * var(--u)) calc(1.6 * var(--u)); }
+.plan .opening-sash { fill: none; stroke: var(--brand-dark); stroke-width: calc(1.4 * var(--u)); pointer-events: none; }
+.plan .opening-width.is-window { fill: var(--brand-dark); font-weight: 600; }
+.plan .opening-width {
+  font-family: var(--mono); font-size: calc(10 * var(--u)); fill: var(--brand-dark);
+  paint-order: stroke; stroke: var(--panel); stroke-width: calc(3 * var(--u)); pointer-events: none;
+}
+/* 放门模式：光标变十字（与画墙同一个信号） */
+.plan-wrap.is-opening .plan { cursor: crosshair; }
+.plan .door-leaf { fill: var(--ink-3); fill-opacity: .06; stroke: var(--ink-3); stroke-opacity: .4; stroke-width: calc(1 * var(--u)); stroke-dasharray: calc(4 * var(--u)) calc(3 * var(--u)); }
+.plan .door-closed { stroke: var(--ink-3); stroke-opacity: .8; stroke-width: calc(2 * var(--u)); stroke-dasharray: calc(6 * var(--u)) calc(4 * var(--u)); stroke-linecap: round; }
+.plan .door-hinge { stroke: var(--brand); stroke-opacity: .75; stroke-width: calc(3 * var(--u)); }
+.plan .door-hinge-dot { fill: #fff; stroke: var(--brand); stroke-width: calc(2 * var(--u)); }
+.plan .door-open { stroke-width: calc(3 * var(--u)); stroke-linecap: round; }
+.plan .handle-rotate { fill: var(--brand); cursor: grab; }
+.plan .handle-rotate:hover { fill: var(--brand-dark); }
+.plan .ruler { font-family: var(--mono); font-size: calc(10 * var(--u)); fill: var(--ink-3); }
+.plan .dim-line { stroke: var(--ink-3); stroke-width: calc(1 * var(--u)); }
+
+.plan-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 6px;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+
+/* ---------- 状态 ---------- */
+
+.status { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
+.dot--bad { background: var(--bad); }
+.dot--warn { background: var(--warn); }
+
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.kpi { border: 1px solid var(--line-2); border-radius: 8px; padding: 8px 10px; background: #fbfdfe; }
+.kpi span { display: block; font-size: 11px; color: var(--ink-3); }
+.kpi b { font-family: var(--mono); font-size: 15px; }
+
+.issue-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.issue-list li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: var(--bad-soft);
+  color: var(--bad-ink);
+}
+.issue-list li button { margin-left: auto; }
+
+/* ---------- 轻提示（原型 toast 的等价物） ---------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 58px;
+  transform: translate(-50%, 12px);
+  background: var(--ink);
+  color: #fff;
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  /* 只动位移，不动 opacity：淡出中途的中间灰会被对比度闸门判成不达标，
+     而且那半秒确实更难读。显隐要瞬时，滑入仍保留。 */
+  transition: transform .2s;
+  z-index: 40;
+  max-width: 80vw;
+  text-align: center;
+}
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- 下一步占位 ---------- */
+
+.placeholder {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  min-height: 340px;
+  text-align: center;
+  color: var(--ink-3);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: #fbfdfe;
+}
+.placeholder b { color: var(--ink-2); font-size: 15px; }
+
+@media (max-width: 1366px) {
+  /* 字面量列宽 = docs/84 的 ≤1366 档；变量跟着同一档走，收起才不会把宽度算回 1440 的值 */
+  .body { grid-template-columns: 240px minmax(0, 1fr) 300px; --rail-l: 240px; --rail-r: 300px; }
+  .header { gap: 8px; padding: 0 10px; }
+  .doc__name { max-width: 180px; }
+  .doc__nameinput { width: min(180px, 30vw); }
+  .doc__hint { display: none; }
+}
+
+@media (max-width: 1100px) {
+  .body { grid-template-columns: 220px minmax(0, 1fr) 280px; --rail-l: 220px; --rail-r: 280px; }
+}
+
+/* 开门净空（规则 7）：右栏与平面图用同一套分级色 */
+.clearance { margin-top: 8px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); }
+.clearance-head { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.clearance .hint { margin: 4px 0 0; }
+.clearance.lv-ok { border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); background: color-mix(in srgb, var(--ok) 8%, #fff); }
+.clearance.lv-ok .dot { background: var(--ok); }
+.clearance.lv-warn { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); background: color-mix(in srgb, var(--warn) 10%, #fff); }
+.clearance.lv-warn .dot { background: var(--warn); }
+.clearance.lv-bad { border-color: color-mix(in srgb, var(--bad) 45%, var(--line)); background: color-mix(in srgb, var(--bad) 10%, #fff); }
+.clearance.lv-bad .dot { background: var(--bad); }
+.txt-warn { color: var(--warn-ink); }
+.txt-bad { color: var(--bad-ink); }
+.sub-head { margin: 10px 0 6px; font-size: 12px; font-weight: 600; color: var(--ink-2); display: flex; align-items: baseline; gap: 6px; }
+.sub-head .hint { font-weight: 400; }
+
+/* ── 「更多」里的身份/能力行（B4f）──────────────────────────────
+   为什么塞进菜单：顶栏只留天天要点的；而“按钮为什么灰着”这个疑问，
+   用户会顺着“更多”找过来。做成一段文字而不是一个链接 —— 它没有可去的页面。 */
+.more__who {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 8px 10px; max-width: 320px;
+  font-size: 12px; line-height: 1.5; color: var(--ink-2);
+  border-bottom: 1px solid var(--line);
+}
+.more__who b { color: var(--ink-1); }
+.more__bad { color: #b45309; }
+.more__muted { color: var(--ink-3); }
+
+/* 顶栏上「这是新方案」那句：它是提醒，不是装饰，所以给一条底色让人看得见 */
+.brand__hint {
+  padding: 2px 8px; border-radius: 6px;
+  background: var(--brand-soft); color: var(--brand);
+  font-size: 12px; white-space: nowrap;
+}
+
+/* 草稿那一块（只在 `/design/new` 出现）：写不进去时占位与颜色都要跟"已存好"分得开 */
+.draft { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; min-width: 0; overflow: hidden; }
+.draft__on { color: var(--warn-ink); }
+.draft__note { color: var(--ink-2); }
+.draft__on, .draft__note { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.draft .btn { flex: none; }
+.draft__bad { padding: 2px 8px; border-radius: 6px; background: var(--bad-soft); color: var(--bad-ink); }
+
+
+/* ---------------- 动线（W4/P2）----------------
+   线身在墙下（门洞露出）；站点/箭头/原因在墙与设备上（docs/97 §5.3）。
+   世界坐标层里的长度一律用米，描边/字号用 --u 换算成像素。 */
+
+.plan-wrap.is-route,
+.plan-wrap.is-route .plan { cursor: crosshair; }
+.plan .route-line {
+  fill: none;
+  stroke: var(--route-color, var(--brand));
+  stroke-width: calc(2.5 * var(--u));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .86;
+  pointer-events: none;
+}
+.plan .route-line.is-selected { stroke-width: calc(3.6 * var(--u)); opacity: 1; }
+.plan .route-line--blocked,
+.plan .route-preview .route-line--blocked {
+  stroke: var(--bad);
+  stroke-dasharray: calc(5 * var(--u)) calc(4 * var(--u));
+}
+.plan .route-line.route-pattern-2 { stroke-dasharray: calc(8 * var(--u)) calc(4 * var(--u)); }
+.plan .route-line.route-pattern-3 { stroke-dasharray: calc(2 * var(--u)) calc(3 * var(--u)); }
+.plan .route-line.route-pattern-4 { stroke-dasharray: calc(10 * var(--u)) calc(3 * var(--u)) calc(2 * var(--u)) calc(3 * var(--u)); }
+.plan .route-line.route-pattern-5 { stroke-dasharray: calc(12 * var(--u)) calc(4 * var(--u)) calc(2 * var(--u)) calc(4 * var(--u)); }
+.plan .route-line.route-pattern-6 { stroke-dasharray: calc(6 * var(--u)) calc(3 * var(--u)) calc(2 * var(--u)) calc(3 * var(--u)); }
+/* 失效/预览的线型必须压过颜色槽的虚线：红虚线是“走不通”的最强提示 */
+.plan .route-line.route-line--blocked { stroke-dasharray: calc(5 * var(--u)) calc(4 * var(--u)); }
+.plan .route-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 0.34;
+  stroke-linecap: round;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.plan .route-arrow {
+  fill: var(--route-color, var(--brand));
+  stroke: var(--panel);
+  stroke-width: calc(.7 * var(--u));
+  opacity: .9;
+  pointer-events: none;
+}
+.plan .route-nodes { cursor: grab; }
+.plan .route-stop__hit {
+  fill: transparent;
+  stroke: none;
+  /* 触屏命中至少 44 px：0.36 m × 64 = 23.04 px 半径 → 直径 ≈ 46 px；视觉点不放大 */
+  pointer-events: all;
+  cursor: grab;
+}
+.plan .route-stop__dot {
+  fill: var(--panel);
+  stroke: var(--route-color, var(--brand));
+  stroke-width: calc(2.2 * var(--u));
+  pointer-events: none;
+}
+.plan .route-stop.is-selected .route-stop__dot {
+  fill: var(--route-color, var(--brand));
+  stroke: var(--panel);
+  stroke-width: calc(2.4 * var(--u));
+}
+.plan .route-stop__label {
+  fill: var(--ink);
+  stroke: var(--panel);
+  stroke-width: calc(2.6 * var(--u));
+  paint-order: stroke;
+  font-family: var(--mono);
+  font-size: calc(11 * var(--u));
+  font-weight: 700;
+  pointer-events: none;
+}
+.plan .route-stop.is-preview .route-stop__dot { opacity: .9; }
+.plan .route-reason {
+  fill: var(--bad-ink);
+  stroke: var(--panel);
+  stroke-width: calc(2.6 * var(--u));
+  paint-order: stroke;
+  font-size: calc(10 * var(--u));
+  pointer-events: none;
+}
+.plan .route-preview { pointer-events: none; }
+.plan .route-preview .route-line { opacity: .95; }
+
+/* 画布图例：左上角开放面积徽标下面；色块 + 编号，名称/长度在 title 与右栏。 */
+.flow-legend {
+  position: absolute;
+  top: 76px;
+  left: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+}
+.flow-legend__title { color: var(--ink-3); font-size: 11px; padding: 0 2px; }
+.flow-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 24px;
+  padding: 1px 5px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 11px;
+  cursor: pointer;
+}
+.flow-legend__item:hover { border-color: var(--route-color); }
+.flow-legend__item.is-blocked { color: var(--bad-ink); }
+.flow-legend__item.is-hidden { opacity: .42; text-decoration: line-through; }
+.flow-legend__swatch {
+  width: 8px; height: 8px; border-radius: 2px;
+  background: var(--route-color);
+  box-shadow: 0 0 0 1px var(--panel);
+}
+@media (pointer: coarse) {
+  .flow-legend__item { min-height: 44px; }
+  .route-card__main,
+  .route-card__stop-main,
+  .route-card__icon { min-height: 44px; }
+}
+
+/* 右栏动线卡（Teleport 到 #rail-right；不修改 Inspector 的写作用域）。
+   1280 断点下右栏 260px：名称单行省略，完整名在 title 里。 */
+/* ---------------- 柱卡（P2 2D 右栏）---------------- */
+.column-card__count { color: var(--ink-3); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.column-card__empty { color: var(--ink-3); font-size: 12.5px; line-height: 1.6; }
+.column-card__list { display: flex; flex-direction: column; gap: 3px; }
+.column-card__row {
+  display: flex; align-items: stretch; gap: 2px;
+  border: 1px solid transparent; border-radius: 7px;
+}
+.column-card__row:hover { background: var(--line-2); }
+.column-card__row.is-selected { background: var(--brand-soft); border-color: color-mix(in srgb, var(--brand) 35%, transparent); }
+.column-card__row.is-invalid { border-color: var(--warn); }
+.column-card__main {
+  flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 7px;
+  padding: 6px 7px; border: 0; border-radius: 6px; background: transparent;
+  color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+}
+.column-card__main b { flex: none; font-size: 12px; }
+.column-card__main span:not(.column-card__bad) {
+  color: var(--ink-3); font-size: 11.5px; font-variant-numeric: tabular-nums;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.column-card__bad { flex: none; color: var(--bad-ink); font-size: 11px; font-weight: 600; }
+.column-card__icon {
+  flex: none; padding: 0 5px; border: 1px solid transparent; border-radius: 6px;
+  background: transparent; color: var(--ink-3); font-size: 11px; cursor: pointer;
+}
+.column-card__icon:hover { border-color: var(--brand); color: var(--brand-dark); background: #fff; }
+.column-card__icon--danger:hover { border-color: var(--bad); color: var(--bad-ink); }
+.column-card__detail {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+  margin: 5px 0 2px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+}
+.column-card__field { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); font-size: 12px; }
+.column-card__field input { width: 72px; padding: 3px 5px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 12px; }
+.column-card__field input:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; border-color: var(--brand); }
+.column-card__reason { flex-basis: 100%; margin: 0; color: var(--bad-ink); font-size: 12px; line-height: 1.5; }
+.column-card__actions { display: flex; gap: 6px; margin-left: auto; }
+.column-card__actions .btn { padding: 3px 9px; font-size: 12px; }
+.column-card__stats {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px;
+  margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line-2);
+  color: var(--ink-2); font-size: 12px; font-variant-numeric: tabular-nums;
+}
+.column-card__limit { margin: 6px 0 0; color: var(--warn-ink); }
+.column-card__hint { margin: 6px 0 0; }
+
+.route-card__count { color: var(--ink-3); font-size: 12px; white-space: nowrap; }
+.route-card__empty { color: var(--ink-3); font-size: 12.5px; line-height: 1.6; }
+.route-card__list { display: flex; flex-direction: column; gap: 3px; }
+.route-card__row {
+  display: flex; align-items: center; gap: 3px;
+  padding: 2px; border-radius: 8px;
+}
+.route-card__row.is-selected { background: var(--brand-soft); }
+.route-card__row.is-hidden .route-card__main { opacity: .55; }
+.route-card__main {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 4px; border: 0; border-radius: 6px;
+  background: transparent; color: var(--ink); text-align: left; cursor: pointer;
+}
+.route-card__main:hover { background: color-mix(in srgb, var(--brand) 7%, transparent); }
+.route-swatch {
+  flex: none; width: 10px; height: 10px; border-radius: 3px;
+  background: var(--route-color);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 18%, transparent);
+}
+.route-card__row.is-blocked .route-swatch { background: var(--bad); }
+.route-card__name {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-weight: 600;
+}
+.route-card__meta { flex: none; margin-left: auto; color: var(--ink-3); font-size: 11.5px; white-space: nowrap; }
+.route-card__icon {
+  flex: none; padding: 4px 5px; border: 1px solid var(--line-2); border-radius: 6px;
+  background: var(--panel); color: var(--ink-2); font-size: 11px; line-height: 1.2; cursor: pointer;
+}
+.route-card__icon:hover { border-color: var(--brand); color: var(--brand-dark); }
+.route-card__icon--danger:hover { border-color: var(--bad); color: var(--bad-ink); }
+.route-card__detail {
+  margin-top: 4px; padding-top: 7px; border-top: 1px solid var(--line-2);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.route-card__field { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
+.route-card__field input {
+  flex: 1; min-width: 0; padding: 4px 6px; border: 1px solid var(--line);
+  border-radius: 6px; background: var(--panel); color: var(--ink);
+}
+.route-card__status { margin: 0; }
+.route-card__status.is-blocked { color: var(--bad-ink); }
+.route-card__stops { display: flex; flex-direction: column; gap: 2px; max-height: 148px; overflow-y: auto; }
+.route-card__stop { display: flex; align-items: center; gap: 3px; border-radius: 6px; }
+.route-card__stop.is-selected { background: var(--brand-soft); }
+.route-card__stop-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px;
+  padding: 4px 5px; border: 0; border-radius: 5px; background: transparent;
+  color: var(--ink-2); font-size: 11.5px; text-align: left; cursor: pointer;
+}
+.route-card__stop-main b { color: var(--ink); font-family: var(--mono); font-size: 11px; }
+.route-card__stop-main span { color: var(--ink-3); font-family: var(--mono); white-space: nowrap; }
+.route-card__stop-main:hover { background: color-mix(in srgb, var(--brand) 7%, transparent); }
+.route-card__icon:disabled { opacity: .42; cursor: not-allowed; }
+.route-card__actions { display: flex; flex-wrap: wrap; gap: 5px; }
+.route-card__actions .btn { padding: 4px 7px; font-size: 12px; }
+.route-card__append { margin: 6px 0 0; color: var(--brand-dark); }

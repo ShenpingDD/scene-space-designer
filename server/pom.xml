@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+    版本选择（2026-09-22 核实）：
+      Spring Boot 3.5.x 的 OSS 支持已于 2026-06-30 结束（最后一版 3.5.16），
+      4.0.x 的 OSS 支持到 2026-12-31，4.1.x 到 2027-07-31。
+      本项目是**新建**工程，没有迁移负担，所以直接落在 OSS 窗口最长的 4.1.x 上。
+      Java 21 在 4.x 支持范围内（17–26）。
+
+    依赖刻意保持精简：Web + JDBC + 校验 + Flyway + MySQL 驱动。
+      - 不引 ORM：v1 的查询很薄（方案 CRUD + 配置读写），JDBC 直写更可控，
+        表结构演进由 Flyway 管（见 db/migration）。
+      - 不引 Lombok：注解处理器会拖慢编译，且 Java 21 的 record 已经够用。
+  -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.1.1</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.scene.spatial</groupId>
+  <artifactId>spatial-design-server</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>scene-space-designer-server</name>
+  <description>场景空间设计器 —— 后端（空间设计内核 + 方案库）</description>
+
+  <properties>
+    <java.version>21</java.version>
+    <!-- 源码里有中文注释：编译必须显式 UTF-8，否则在 GBK 控制台下会乱码甚至编译失败 -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- 登录鉴权（U1）：会话 cookie + CSRF + 角色门。
+         同 Flyway 那条坑：Boot 4 把自动配置分到了独立模块，只引 spring-security-web
+         这类"库"不会带来自动配置，表现是"应用照常启动、一句话都不报、鉴权一点不生效"，
+         所以引 starter。 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!-- 库表演进：迁移只加版本、不改旧文件（V1__init.sql / V2__seed_products.sql / V3__seed_params.sql） -->
+    <!-- Flyway 自动配置 + flyway-core。
+         **Boot 4 的坑**：Boot 4 把自动配置拆成了独立模块（spring-boot-flyway 等），
+         只引 flyway-core 这种"库"**不会**带来自动配置 —— 后果极其安静：
+         应用正常启动、日志里连 Flyway 的 banner 都没有、迁移一条都不跑、也不报错。
+         所以要用 starter（starter 才会带上自动配置模块）。下面的 flyway-mysql 是
+         数据库方言包，两个都要：一个管"什么时候迁移"，一个管"MySQL 怎么迁移"。 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-flyway</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-mysql</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- API 文档：OpenAPI 由代码生成（docs/20 只留决策，字段说明交给它，免得手写脱钩）。
+         版本线注意：springdoc 2.x 只兼容 Spring Boot 3；本项目 Boot 4.1.1 必须用 3.x。
+         显式写版本：Boot 的父工程不管 springdoc 的版本。 -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>3.1.1</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <!-- 默认构建**不动**静态资源：`mvn package` 打出来的 jar 只服务 /api/**（与之前一致）。
+           前端产物只在 `-Psingle-jar` 这一档被复制进来，见文件末尾的 profile。 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- Windows 控制台默认 GBK：不指定的话中文断言信息会变乱码（与 run-java-kernel.sh 同款处理） -->
+          <argLine>-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!--
+      single-jar —— 单 jar 部署形态（docs/81 §五 第 5 项）
+
+      做什么：`process-resources` 阶段把 `app/dist`（Vite 构建产物）复制到
+      `${project.build.outputDirectory}/static`，于是 `spring-boot:repackage` 打出的
+      `BOOT-INF/classes/static/**` 里就带着前端页面与 assets。服务端再由
+      `SpaFallbackConfig` 提供真实路径与 SPA 兜底。
+
+      为什么用 profile 而不是默认绑定：默认构建（`mvn package`）必须保持原样 ——
+      不带前端产物、不依赖 node 构建步骤，CI 的纯后端校验不受影响。
+
+      用法：`bash tools/build-single-jar.sh`（脚本里就是「构建前端 + 本 profile 打包」两步）。
+    -->
+    <profile>
+      <id>single-jar</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-app-dist-into-static</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+                  <resources>
+                    <resource>
+                      <!-- 目录不存在时这一步会直接失败（响亮），不会悄悄打出一个没有页面的 jar -->
+                      <directory>${project.basedir}/../app/dist</directory>
+                      <filtering>false</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

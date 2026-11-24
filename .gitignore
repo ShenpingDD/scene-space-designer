@@ -1,0 +1,29 @@
+# 采集凭证与大体积中间产物（可从 zip 恢复，不入库）
+view-source_*.html
+app-index.html
+_build/
+_archive/
+node_modules/
+*.tmp
+
+# 生成物：reflow 视图可随时重建，不入库
+spatial-core/_dump/
+
+# 模型资产：原始 GLB 由 tools/models/extract-models.mjs 从 extracted/ 重建（一条命令）
+assets/models/*.glb
+
+# 一键启动脚本的日志（本机产物）
+logs/
+
+# 方案封面（R6-3 3f）：保存方案时截的三维视角，**运行期生成** ——
+# 一次方案一张图、跟着本机的方案数据走，跟仓库没有关系（丢了重截一张就有了）。
+# 注意 assets/covers/ 与 assets/optimized/ 不是一类东西：
+# 后者是离线管线的产物、前端靠 /assets/ 直接取；前者只由后端经 /api/schemes/{id}/cover 下发。
+assets/covers/
+
+# macOS 目录元数据（换机器后到处冒出来，不属于仓库）
+.DS_Store
+**/.DS_Store
+
+# AgentTeams 运行态（本机协调产物，不入库）
+.agent-teams/

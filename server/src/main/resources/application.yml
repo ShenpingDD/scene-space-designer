@@ -1,0 +1,115 @@
+# 场景空间设计器 —— 后端配置
+#
+# 原则：**换环境不改文件**。所有环境相关的值都留了环境变量口子（${VAR:默认}），
+# 默认值面向本机开发（单一租户、内网部署，见 docs/06-architecture-baseline.md）。
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      # 会话闲置超时（U1）：现场用一整天，框架默认的 30 分钟太短。
+      timeout: ${SPATIAL_SESSION_TIMEOUT:8h}
+      cookie:
+        name: ${SPATIAL_SESSION_COOKIE:SPATIAL_SESSION}
+        http-only: true
+        same-site: lax
+        path: /
+        # 内网明文 HTTP 下的必然取值：置 true 之后浏览器不会回发 cookie，
+        # 表现是「登录成功、下一个请求仍然未登录」这种安静失效。上 TLS 时置 true 才生效。
+        secure: ${SPATIAL_SESSION_SECURE:false}
+
+spring:
+  application:
+    name: scene-space-designer
+
+  datasource:
+    # 库名默认 spatial_design（由 server/db/00-create-database.sql 建，Flyway 只负责库内演进）
+    url: "jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/${DB_NAME:spatial_design}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # 迁移文件一旦发布**只加版本、不改旧文件**（改旧的会让已上库的环境与仓库不一致）
+    baseline-on-migrate: false
+    validate-on-migrate: true
+
+  jackson:
+    default-property-inclusion: non_null
+
+  # ── 上传限额（R6-2）──
+  # Spring 默认**单文件 1 MB / 整请求 10 MB** —— 供应商原始 GLB 实测 18 MB 上下，
+  # 不显式放宽的话，第一次上传一定失败（而且是 500 而不是"文件太大"这种人话）。
+  # 32 / 64 的取法：LOD0 ≤ 3 MB 是**交付**口径，源文件按 20 MB 量级留一倍余量；
+  # 整请求 64 MB 是为了"一个请求带模型 + 缩略图 + 顶视图"也放得下。
+  servlet:
+    multipart:
+      max-file-size: ${SPATIAL_UPLOAD_MAX_FILE:32MB}
+      max-request-size: ${SPATIAL_UPLOAD_MAX_REQUEST:64MB}
+      enabled: true
+# ── 方案存储（见 docs/21 §2.2）──
+# 默认落库；无库开发档用内存实现。默认值刻意**不是** memory：配置错了要响亮，
+# 绝不允许生产环境悄悄把方案存在内存里。
+spatial:
+  store: ${SPATIAL_STORE:jdbc}
+  # ── 鉴权档（U1）──
+  # session：请求走登录态（默认，连库运行时只有这一档）；off：取固定的本机身份。
+  # `off` 只在 local-nodb 档被接受，其他档设成 off 会启动失败 —— 鉴权不可能在部署时被关掉。
+  auth:
+    mode: ${SPATIAL_AUTH_MODE:session}
+  # ── 上传落盘目录（R6-2）──
+  # **不放 app/public 下**：那是构建产物目录，sync-assets 会覆盖它。
+  # 上传件走 /api/assets/**（经 Vite 代理，前端不需要知道后端地址），
+  # 所以这里只要一个"进程看得见"的目录就行。
+  # 运行期产物（LOD）的静态服务根；单 jar 时 Spring 从这里回落，见 SpaFallbackConfig。
+  # 与 @Value("${spatial.assets-dir:assets}") 必须同名，换环境才能用 SPATIAL_ASSETS_DIR 改。
+  assets-dir: ${SPATIAL_ASSETS_DIR:assets}
+  uploads:
+    dir: ${SPATIAL_UPLOAD_DIR:assets/uploads}
+  # ── 体检缓存（R4-3）──
+  # 键 = 布局内容 + 参数表指纹："内容没变"就必然命中，参数一改自动作废。
+  # TTL 只是兜底，管的是"参数表热更新了但进程没重启"这类看不见的变化。
+  # 默认值刻意给足（128 条 / 10 分钟）：本机与内网单租户，方案的条数远小于这个数。
+  audit:
+    maxEntries: ${SPATIAL_AUDIT_MAX_ENTRIES:128}
+    ttlSeconds: ${SPATIAL_AUDIT_TTL_SECONDS:600}
+  # ── 交付包封面（R6-5）──
+  # 交付包里的封面图落在这里（内容寻址的文件名）；换环境用 SPATIAL_COVERS_DIR 改。
+  # ⚠️ 键与读它的 `@Value` 必须同名：这批之前读的是 xy.covers.dir —— 配置里连键都没有，
+  #    于是"换环境改不动"，而且没有任何检查会说话（第 2 轮审查 dev-3）。
+  covers:
+    dir: ${SPATIAL_COVERS_DIR:assets/covers}
+  # ── LOD 异步作业（R5）──
+  # 读取方全在 `LodJob` 的 `@Value` 上（键必须同名）。这五条原先**只写在代码默认值里、配置里一个都没有**
+  # —— 与 `covers` 同类：换环境想改 LOD 行为时，配置里找不到入口。2026-10-12 补齐
+  # （`check-facts.py` 的配置键守卫改成双向后当场发现）。
+  lod:
+    enabled: ${SPATIAL_LOD_ENABLED:true}
+    node: ${SPATIAL_LOD_NODE:node}
+    script: ${SPATIAL_LOD_SCRIPT:tools/models/optimize-models.mjs}
+    out-dir: ${SPATIAL_LOD_OUT_DIR:assets/optimized}
+    log: ${SPATIAL_LOD_LOG:logs/lod-job.log}
+
+---
+# 无数据库开发档：内存存储 + 不跑迁移 + 数据源不 fail-fast
+# 用法：java -jar target/spatial-design-server-0.1.0-SNAPSHOT.jar --spring.profiles.active=local-nodb
+#
+# ⚠️ **能力边界（2026-10-12 实测逐条探过）**：这一档下需要 JDBC 仓储的接口**故意不存在** ——`/api/catalog`（型号目录）与 `/api/admin/**`（维护端）返回 404；在的只有 `/api/health`（`store=memory`）、`/api/health/kernel`、`/api/params`、`/api/schemes`。所以设计端能打开、但**读不到型号目录**。用途是「机器上没有 MySQL 时验证服务能起 + 内核自检还绿」，**不是日常开发环境**。
+spring:
+  config:
+    activate:
+      on-profile: local-nodb
+  flyway:
+    enabled: false
+  datasource:
+    hikari:
+      initialization-fail-timeout: -1
+spatial:
+  store: memory
+  # 无库档没有 sys_user 表，登录不可能成立：这一档默认取固定的本机身份（启动日志会大声 WARN）。
+  auth:
+    mode: ${SPATIAL_AUTH_MODE:off}

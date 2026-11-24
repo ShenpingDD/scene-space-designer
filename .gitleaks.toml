@@ -1,0 +1,16 @@
+# gitleaks 配置：在默认规则之上加一条「测试夹具」白名单。
+#
+# 为什么需要它：`app/test/api-csrf.test.js` 里有一个**假的** CSRF 令牌字面量
+# （`TOKEN = '...'`），gitleaks 的 generic-api-key 规则会把它当成真凭证 —— 这是它的设计，
+# 宁可误报也不漏报。我们既不想让 CI 红着过，也不想把扫描降级，所以按**路径**放行一个文件，
+# 而不是把规则关掉。
+#
+# 放行条件（改这里之前先读一遍）：
+#   1. 只放行 test/ 下的夹具，不放过 src/、server/src/main/、docs/ 里的任何东西；
+#   2. 文件里不得出现真实凭据 —— 这个令牌只是拿来验证「cookie 值里有 `=` 时按第一个 = 切」。
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "CSRF 测试夹具：一个假的令牌字面量，用来验证带 = 的 cookie 怎么切"
+paths = ['''app/test/api-csrf\.test\.js''']

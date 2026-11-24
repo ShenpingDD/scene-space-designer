@@ -1,0 +1,16 @@
+场景空间设计器（scene-space-designer）
+Copyright (c) 2026 scene-space-designer authors
+
+本仓以源码可见（source-available）方式发布，**不是 OSI 认可的开源软件**：
+
+- 源码：PolyForm Noncommercial License 1.0.0 —— 见 `LICENSE`
+- 文档、缩略图、自有三维模型：CC BY-NC 4.0 —— 见 `LICENSES/CC-BY-NC-4.0.txt`
+- 商业用途需单独授权 —— 见 `COMMERCIAL.md`
+- 第三方组件按其原许可证 —— 见 `THIRD_PARTY_LICENSES.md`
+- 名称与标识不随代码授权 —— 见 `TRADEMARKS.md`
+
+本软件按「现状」提供，不附带任何明示或默示的担保，包括但不限于适销性与特定用途适用性。
+在适用法律允许的最大范围内，作者不对因使用本软件产生的任何直接或间接损失承担责任。
+
+仓内全部数据（产品目录、尺寸、规则用例、演示模型）都是**合成的演示数据**，
+不来自任何真实厂商的产品资料；不要把它们当作真实设备参数使用。

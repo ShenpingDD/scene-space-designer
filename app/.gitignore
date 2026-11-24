@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+.env
+.env.local
+public/assets/
+
+# 本机依赖目录与指向它的软链都不入库
+node_modules

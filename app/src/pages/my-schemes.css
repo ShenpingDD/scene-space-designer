@@ -1,0 +1,749 @@
+/*
+ * my-schemes.css —— 我的全部方案（`/project`）设计稿 v2 的版面与卡片
+ *
+ * 数值来自 `设计规格交接.md` §3/§4/§6 与参考实现 HTML：
+ *   导航 56、品牌标 40；内容区 max-width 1516、padding 24/32/32；
+ *   标题 22/600；工具条 13；4 列网格 gap 16，断点 1180/900/600 降 4/3/2/1；
+ *   卡片圆角 12、16:9 封面、角标 11px、名称 14/600、时间 12、操作 13；
+ *   分页 32×32、当前页品牌蓝白字、禁用 50%。
+ *
+ * 颜色一律走 style.css 的变量（AGENTS §6：主题色只该有一个出处）；
+ * 阴影用 style.css 已有的 `--shadow-card` / `--shadow-card-hover`，本页不新增 token。
+ *
+ * 卡片选择器（`.dscard*`）也在这里：`DesignSchemeCard.vue` 只带结构，不带 <style>，
+ * 这样"卡片长什么样"只有这一份，页面与测试都读同一个文件。
+ */
+
+.my {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  background: var(--bg);
+}
+
+/* ---------- 导航栏（与首页同一套，不放新建） ---------- */
+
+.my__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 56px;
+  padding: 0 20px 0 24px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.my__brand img {
+  display: block;
+  height: 40px;
+  width: auto;
+}
+.my__account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.my__admin {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.my__admin:hover {
+  background: var(--bg);
+  color: var(--brand);
+}
+.my__admin:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* 退出失败那条：导航栏下方一整行（与首页同一处置） */
+.my .acct__trouble {
+  position: fixed;
+  top: 56px;
+  right: 0;
+  left: 0;
+  z-index: 25;
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--line);
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ---------- 内容区：左右 32、上 24、下 32，max 1516 居中 ---------- */
+
+.my__body {
+  min-height: 0;
+  overflow: auto;
+  padding: 24px 32px 32px;
+}
+.my__pane {
+  width: 100%;
+  max-width: 1516px;
+  margin: 0 auto;
+}
+
+/* 标题行：大标题 + 回收站低调入口 + 返回首页 */
+.my__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 0 20px;
+}
+.my__head h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.my__head-ops {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.my__back,
+.my__trash {
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.my__back:hover,
+.my__trash:hover {
+  color: var(--brand);
+}
+.my__trash[aria-pressed='true'] {
+  color: var(--brand);
+}
+.my__trash-n {
+  color: var(--ink-3);
+}
+.my__back:focus-visible,
+.my__trash:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------- 工具条 ---------- */
+
+.my__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+}
+.my__q {
+  flex: 1 1 220px;
+  max-width: 320px;
+  padding: 8px 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+.my__q::placeholder {
+  color: var(--ink-3);
+}
+.my__q:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+.my__tab {
+  padding: 6px 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.my__tab:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.my__tab.is-on {
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-color: var(--brand);
+}
+.my__tab b {
+  font-weight: 600;
+}
+.my__tab:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.my__spacer {
+  flex: 1;
+}
+.my__lab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.my__sel {
+  padding: 8px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.my__sel:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.my__clear {
+  padding: 6px 8px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.my__clear:hover {
+  color: var(--brand);
+  text-decoration: underline;
+}
+.my__clear:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 筛选说明：显示几条 / 共几条 / 按什么条件（筛选不静默） */
+.my__summary {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.my__note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+/* 动作结果：成功也留着（用户可能刚点完就走开） */
+.my__notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.my__notice--ok {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.my__notice--bad {
+  background: var(--bad-soft);
+  color: var(--bad-ink);
+}
+.my__notice-close {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ---------- 卡片墙：4 列，断点 1180 / 900 / 600 降 4/3/2/1 ---------- */
+
+.my__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 600px) {
+  .my__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) {
+  .my__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1180px) {
+  .my__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* 第 1 格：新建大卡，虚线边框 + 居中加号（与首页同一套视觉） */
+.my__new {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 230px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.my__new:hover {
+  border-color: var(--brand);
+}
+.my__new:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.my__plus {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 22px;
+  line-height: 1;
+}
+.my__new-text {
+  font-size: 13px;
+  color: var(--ink);
+}
+
+/* 取数中 / 取不到 / 没有 / 筛没了：占满一行，只用文字说清 */
+.my__state {
+  grid-column: 1 / -1;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  min-height: 120px;
+  margin: 0;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+/* 方案库里有新建卡时，说明条接在它右边，而不是另起一行留下三个空格子 */
+@media (min-width: 600px) {
+  .my__new + .my__state { grid-column: 2 / -1; }
+}
+.my__state--bad {
+  background: var(--bad-soft);
+  border-color: var(--bad);
+  color: var(--bad-ink);
+}
+.my__mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+.my__retry {
+  justify-self: start;
+  padding: 5px 10px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ---------- 方案卡（DesignSchemeCard） ---------- */
+
+.dscard {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.dscard:hover {
+  border-color: var(--brand);
+  box-shadow: var(--shadow-card-hover);
+}
+.dscard:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.dscard.is-readonly {
+  cursor: default;
+}
+.dscard.is-deleted {
+  border-style: dashed;
+}
+
+/* 封面 16:9：比例由这一格管住，图绝对定位，图自己的尺寸不能把这一格撑开 */
+.dscard__thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 11px 11px 0 0;
+  background: var(--line);
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.dscard__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 右上角角标：放不下（红）/ 门（橙），11px 白字；数量与原因在 title 里 */
+.dscard__badges {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+.dscard__badge {
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.dscard__badge--bad {
+  background: var(--bad);
+}
+.dscard__badge--warn {
+  background: var(--warn);
+}
+
+/* 文字区：名称 14/600 单行省略、时间 12、操作 13 */
+.dscard__meta {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 12px 12px;
+}
+.dscard__name {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dscard__time {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.dscard__ops {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 2px;
+}
+.dscard__edit {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--brand);
+  cursor: pointer;
+}
+.dscard__edit:hover {
+  text-decoration: underline;
+}
+.dscard__edit:focus-visible,
+.dscard__more-btn:focus-visible,
+.dscard__mi:focus-visible,
+.dscard__act:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* 「···」更多菜单：向上弹，避免被下一行卡片盖住 */
+.dscard__more {
+  position: relative;
+  display: inline-flex;
+}
+.dscard__more-btn {
+  padding: 0 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.dscard__more-btn:hover {
+  background: var(--bg);
+  color: var(--brand);
+}
+.dscard__menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 8;
+  display: grid;
+  min-width: 132px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card-hover);
+}
+.dscard__mi {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.dscard__mi:hover:not(:disabled) {
+  background: var(--bg);
+  color: var(--brand);
+}
+.dscard__mi--danger {
+  color: var(--bad-ink);
+}
+.dscard__mi--danger:hover:not(:disabled) {
+  background: var(--bad-soft);
+  color: var(--bad-ink);
+}
+.dscard__mi:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+/* 卡片里的行动按钮（恢复 / 确认删除 / 回滚到这一版） */
+.dscard__act {
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.dscard__act:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.dscard__act:disabled {
+  opacity: .5;
+  cursor: default;
+}
+.dscard__act--danger {
+  border-color: var(--bad);
+  color: var(--bad-ink);
+}
+.dscard__act--danger:hover:not(:disabled) {
+  background: var(--bad-soft);
+  color: var(--bad-ink);
+}
+
+/* 二次确认：盖在卡片下半部，不撑高网格行（撑高会让同一行卡片高低不齐） */
+.dscard__confirm {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 7;
+  padding: 10px 12px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 12px 12px;
+  box-shadow: var(--shadow-card-hover);
+}
+.dscard__confirm-text {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.dscard__confirm-ops {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 版本历史：整张卡片翻成抽屉（版本可能很多，所以内部滚动） */
+.dscard__revs {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  overflow: auto;
+  padding: 10px 12px;
+  background: var(--panel);
+  border-radius: 12px;
+}
+.dscard__revs-msg {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+.dscard__revs-msg--bad {
+  color: var(--bad-ink);
+}
+.dscard__revs-note {
+  margin: 0 0 6px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+.dscard__revs-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dscard__rev {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line-2);
+  font-size: 12px;
+  color: var(--ink);
+}
+.dscard__rev.is-current {
+  background: var(--brand-soft);
+}
+.dscard__rev-no {
+  font-weight: 600;
+}
+.dscard__rev-dim,
+.dscard__rev-time {
+  color: var(--ink-3);
+}
+.dscard__rev-note {
+  flex: 1 1 80px;
+  overflow: hidden;
+  color: var(--ink-2);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dscard__rev-spacer {
+  flex: 1;
+}
+.dscard__tag {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 11px;
+}
+.dscard__mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---------- 分页：右对齐（移动端居中），32×32，当前页品牌蓝白字 ---------- */
+
+.my__pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.my__pg {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.my__pg--num {
+  width: 32px;
+  padding: 0;
+  text-align: center;
+}
+.my__pg:hover:not(:disabled):not(.is-on) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.my__pg.is-on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+.my__pg:disabled {
+  opacity: .5;
+  cursor: default;
+}
+.my__pg:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+/* 页码折叠：只占位、不参与点击；与页码同高，保持分页基线 */
+.my__pg-gap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 32px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+/* ---------- 窄屏 ---------- */
+
+@media (max-width: 767px) {
+  .my__body { padding: 16px; }
+  .my__top { padding: 0 12px 0 16px; }
+  .my__brand img { height: 32px; }
+  .my .acct__role { display: none; }
+  .my__pager { justify-content: center; }
+  .my__q { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my__new,
+  .dscard { transition: none; }
+}
