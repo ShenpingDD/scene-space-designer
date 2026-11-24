@@ -1,0 +1,13 @@
+{
+  "name": "spatial-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "场景空间设计器 · 业务内核（无框架 / 无 DOM / 无 Three.js）：布局合法性校验、空间与墙、自动摆位、门语义、方案导入导出。前端 Vue 3 与后端 Spring 两侧共用同一份规则与同一张断言清单。",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

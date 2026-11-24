@@ -1,0 +1,24 @@
+/*
+ * page.css —— 设计端整页骨架（我的方案在用的那一套）
+ *
+ * 顶栏复用全局的 `.header` / `.brand` / `.spacer` / `.acct`（style.css）。
+ * 首页有自己的一份 `home.css`，登录页有 `login.css`，维护端有 `admin.css`。
+ *
+ * 颜色一律走 style.css 的变量：主题色只该有一个出处（AGENTS §6）。
+ */
+
+.pg { display: grid; grid-template-rows: auto 1fr; height: 100%; }
+.pg__body { min-height: 0; overflow: auto; padding: 16px; }
+.pg__sub { font-size: 12px; color: var(--ink-3); }
+
+/* ---------- 取数失败 / 读不动的提示条 ---------- */
+
+.pg__err {
+  margin: 12px 0 0;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: var(--bad-soft);
+  color: var(--bad-ink);
+  font-size: 13px;
+  line-height: 1.7;
+}

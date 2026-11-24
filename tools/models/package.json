@@ -1,0 +1,19 @@
+{
+  "name": "scene-space-designer-model-tools",
+  "private": true,
+  "type": "module",
+  "description": "模型资产离线工具箱（只跑在开发机上，不进生产运行时）：压缩与 LOD / 几何验收",
+  "scripts": {
+    "optimize": "node optimize-models.mjs",
+    "verify": "python verify-models.py"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "^4.5.0",
+    "@gltf-transform/extensions": "^4.5.0",
+    "@gltf-transform/functions": "^4.5.0",
+    "meshoptimizer": "^1.2.0"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.35.5"
+  }
+}
