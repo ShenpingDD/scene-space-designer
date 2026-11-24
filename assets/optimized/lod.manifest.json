@@ -1,0 +1,27 @@
+{
+  "note": "演示数据（公开仓）：只列公开仓内真实存在的 LOD 文件。",
+  "generatedAt": "2026-11-24",
+  "units": "mm",
+  "models": [
+    {
+      "productId": "demo-blender",
+      "assetId": "demo-blender-001",
+      "modelCode": "DEMO-BL-100",
+      "lods": [
+        {
+          "level": "lod0",
+          "file": "assets/optimized/demo-blender-001.lod0.glb",
+          "bytes": 3637480,
+          "md5": "e66e5c586b48b71fd8595ad414dacdcf",
+          "triangles": 76544,
+          "textures": 0,
+          "bboxMm": {
+            "w": 676.0,
+            "h": 1310.5,
+            "d": 672.0
+          }
+        }
+      ]
+    }
+  ]
+}

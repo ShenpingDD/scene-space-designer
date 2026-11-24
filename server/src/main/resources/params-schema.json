@@ -1,0 +1,1655 @@
+{
+  "$comment": "本文件由 tools/export-params.mjs 生成，请勿手改。改参数请改 spatial-core/src/params.js 的 PARAM_SPEC。",
+  "generatedFrom": "spatial-core/src/params.js",
+  "version": 1,
+  "defaults": {
+    "room": {
+      "minW": 3,
+      "maxW": 20,
+      "minD": 3,
+      "maxD": 20,
+      "minH": 2,
+      "maxH": 5,
+      "nameMaxChars": 12,
+      "minAreaM2": 0.5
+    },
+    "space": {
+      "overlapTolM": 0.005,
+      "wallThicknessM": 0.12,
+      "snapM": 0.1,
+      "rotateStepDeg": 5,
+      "wallOpacity": 1
+    },
+    "layout": {
+      "maxItems": 100,
+      "maxWalls": 100,
+      "autoZ0": 0.7,
+      "autoDz": 1.1,
+      "autoX0": 0.7,
+      "autoDx": 1.2,
+      "autoMargin": 0.5
+    },
+    "column": {
+      "minSideM": 0.2,
+      "maxSideM": 3,
+      "maxCount": 50,
+      "defaultSideM": 0.5
+    },
+    "scheme": {
+      "maxFileBytes": 1000000,
+      "maxCoordM": 22,
+      "minWallLengthM": 0.1
+    },
+    "door": {
+      "openOkDeg": 90,
+      "openWarnDeg": 60,
+      "sweepStepDeg": 1,
+      "freeTolDeg": 0.5,
+      "amountMin": 0,
+      "amountMax": 1
+    },
+    "opening": {
+      "defaultWidthM": 0.9,
+      "defaultHeightM": 2.1,
+      "minWidthM": 0.6,
+      "maxWidthM": 3,
+      "wallEdgeGapM": 0.1,
+      "maxPerWall": 3,
+      "frameThicknessM": 0
+    },
+    "window": {
+      "defaultWidthM": 1.2,
+      "defaultHeightM": 1.5,
+      "defaultSillM": 0.9,
+      "minWidthM": 0.6,
+      "maxWidthM": 3,
+      "minSillM": 0.3,
+      "maxSillM": 2.5,
+      "maxPerWall": 3
+    },
+    "walk": {
+      "radiusM": 0.24,
+      "eyeM": 1.6,
+      "wallClearanceM": 0.06,
+      "doorBarrierMinM": 0.08,
+      "doorBarrierMaxM": 1.8,
+      "stepMaxM": 0.06,
+      "spawnStepM": 0.35
+    },
+    "route": {
+      "maxRoutes": 6,
+      "maxPoints": 20,
+      "gridM": 0.1,
+      "arrowEveryM": 1.5,
+      "maxLengthM": 500,
+      "minAnchorGapM": 0.05
+    },
+    "model": {
+      "anisotropyWarn": 1.02,
+      "envelopeTolMm": 1
+    },
+    "history": {
+      "maxSteps": 40
+    }
+  },
+  "groups": [
+    {
+      "id": "room",
+      "label": "空间尺寸",
+      "help": "房间长宽高的允许范围",
+      "params": [
+        {
+          "path": "room.minW",
+          "key": "minW",
+          "label": "最小长度",
+          "unit": "m",
+          "min": 1,
+          "max": 100,
+          "step": 0.1,
+          "admin": true,
+          "help": "房间长度下限",
+          "default": 3
+        },
+        {
+          "path": "room.maxW",
+          "key": "maxW",
+          "label": "最大长度",
+          "unit": "m",
+          "min": 1,
+          "max": 200,
+          "step": 0.1,
+          "admin": true,
+          "help": "房间长度上限",
+          "default": 20
+        },
+        {
+          "path": "room.minD",
+          "key": "minD",
+          "label": "最小宽度",
+          "unit": "m",
+          "min": 1,
+          "max": 100,
+          "step": 0.1,
+          "admin": true,
+          "help": "房间宽度下限",
+          "default": 3
+        },
+        {
+          "path": "room.maxD",
+          "key": "maxD",
+          "label": "最大宽度",
+          "unit": "m",
+          "min": 1,
+          "max": 200,
+          "step": 0.1,
+          "admin": true,
+          "help": "房间宽度上限",
+          "default": 20
+        },
+        {
+          "path": "room.minH",
+          "key": "minH",
+          "label": "最小层高",
+          "unit": "m",
+          "min": 1,
+          "max": 20,
+          "step": 0.1,
+          "admin": true,
+          "help": "墙高下限",
+          "default": 2
+        },
+        {
+          "path": "room.maxH",
+          "key": "maxH",
+          "label": "最大层高",
+          "unit": "m",
+          "min": 1,
+          "max": 20,
+          "step": 0.1,
+          "admin": true,
+          "help": "墙高上限",
+          "default": 5
+        },
+        {
+          "path": "room.nameMaxChars",
+          "key": "nameMaxChars",
+          "label": "房间名长度",
+          "unit": "字",
+          "min": 2,
+          "max": 40,
+          "step": 1,
+          "admin": true,
+          "help": "房间名最多多少个字（多房间后才有房间名；默认名「未命名房间」不计）",
+          "default": 12
+        },
+        {
+          "path": "room.minAreaM2",
+          "key": "minAreaM2",
+          "label": "窄缝阈值",
+          "unit": "㎡",
+          "min": 0,
+          "max": 10,
+          "step": 0.1,
+          "admin": true,
+          "help": "小于这个面积的房面在列表里标成「窄缝」——**只标不藏**（两面墙贴太近会挤出一条缝）",
+          "default": 0.5
+        }
+      ]
+    },
+    {
+      "id": "space",
+      "label": "几何口径",
+      "help": "判定\"放得下\"用的几何量：容差、墙厚、吸附步长",
+      "params": [
+        {
+          "path": "space.overlapTolM",
+          "key": "overlapTolM",
+          "label": "重叠容差",
+          "unit": "m",
+          "min": 0,
+          "max": 0.05,
+          "step": 0.001,
+          "admin": true,
+          "help": "两台设备占地矩形重叠多少以内不算重叠（5 mm）",
+          "default": 0.005
+        },
+        {
+          "path": "space.wallThicknessM",
+          "key": "wallThicknessM",
+          "label": "墙厚",
+          "unit": "m",
+          "min": 0.05,
+          "max": 0.5,
+          "step": 0.01,
+          "admin": true,
+          "help": "内墙在平面上的厚度，压墙判定与建模都用它",
+          "default": 0.12
+        },
+        {
+          "path": "space.snapM",
+          "key": "snapM",
+          "label": "位置吸附",
+          "unit": "m",
+          "min": 0.01,
+          "max": 1,
+          "step": 0.01,
+          "admin": true,
+          "help": "拖动时位置吸附到多少的整数倍",
+          "default": 0.1
+        },
+        {
+          "path": "space.rotateStepDeg",
+          "key": "rotateStepDeg",
+          "label": "旋转步长",
+          "unit": "°",
+          "min": 1,
+          "max": 45,
+          "step": 1,
+          "admin": true,
+          "help": "按一下旋转键转多少度",
+          "default": 5
+        },
+        {
+          "path": "space.wallOpacity",
+          "key": "wallOpacity",
+          "label": "外墙默认不透明度",
+          "unit": "",
+          "min": 0.2,
+          "max": 1,
+          "step": 0.05,
+          "admin": true,
+          "help": "\"没选过外观档位\"的方案用这个（1 = 实心）。半透明是让交付图更好看的美观选项，档位本身在方案里存的是 solid/half/light",
+          "default": 1
+        }
+      ]
+    },
+    {
+      "id": "layout",
+      "label": "布置规则",
+      "help": "数量上限与自动摆放的间距",
+      "params": [
+        {
+          "path": "layout.maxItems",
+          "key": "maxItems",
+          "label": "设备上限",
+          "unit": "台",
+          "min": 1,
+          "max": 500,
+          "step": 1,
+          "admin": true,
+          "help": "一个方案最多放几台（原型 100，性能与方案文件大小都吃这个）",
+          "default": 100
+        },
+        {
+          "path": "layout.maxWalls",
+          "key": "maxWalls",
+          "label": "内墙上限",
+          "unit": "面",
+          "min": 1,
+          "max": 500,
+          "step": 1,
+          "admin": true,
+          "help": "一个方案最多几面内墙",
+          "default": 100
+        },
+        {
+          "path": "layout.autoZ0",
+          "key": "autoZ0",
+          "label": "自动摆放起始边距",
+          "unit": "m",
+          "min": 0,
+          "max": 5,
+          "step": 0.1,
+          "admin": true,
+          "help": "自动摆放时第一台的边距",
+          "default": 0.7
+        },
+        {
+          "path": "layout.autoDz",
+          "key": "autoDz",
+          "label": "自动摆放行距",
+          "unit": "m",
+          "min": 0.2,
+          "max": 5,
+          "step": 0.1,
+          "admin": true,
+          "help": "自动摆放相邻两台的间距",
+          "default": 1.1
+        },
+        {
+          "path": "layout.autoX0",
+          "key": "autoX0",
+          "label": "自动摆放起始横向边距",
+          "unit": "m",
+          "min": 0,
+          "max": 5,
+          "step": 0.1,
+          "admin": true,
+          "help": "（原型按行列网格摆放，横向与纵向分别有起始值）",
+          "default": 0.7
+        },
+        {
+          "path": "layout.autoDx",
+          "key": "autoDx",
+          "label": "自动摆放列距",
+          "unit": "m",
+          "min": 0.2,
+          "max": 5,
+          "step": 0.1,
+          "admin": true,
+          "help": "自动摆放同排相邻两台的间距",
+          "default": 1.2
+        },
+        {
+          "path": "layout.autoMargin",
+          "key": "autoMargin",
+          "label": "自动摆放末端留白",
+          "unit": "m",
+          "min": 0,
+          "max": 5,
+          "step": 0.1,
+          "admin": true,
+          "help": "离墙留出的空当，保证不会一摆就压墙",
+          "default": 0.5
+        }
+      ]
+    },
+    {
+      "id": "column",
+      "label": "结构柱",
+      "help": "矩形结构柱的尺寸/数量口径（设计决策记录 §二）",
+      "params": [
+        {
+          "path": "column.minSideM",
+          "key": "minSideM",
+          "label": "柱最小边长",
+          "unit": "m",
+          "min": 0.05,
+          "max": 1,
+          "step": 0.01,
+          "admin": true,
+          "help": "矩形柱任一边的下限（0.20 m）；小于它的柱在结构上不成立",
+          "default": 0.2
+        },
+        {
+          "path": "column.maxSideM",
+          "key": "maxSideM",
+          "label": "柱最大边长",
+          "unit": "m",
+          "min": 0.5,
+          "max": 10,
+          "step": 0.1,
+          "admin": true,
+          "help": "矩形柱任一边的上限（3.00 m）；更大的构件按墙体处理",
+          "default": 3
+        },
+        {
+          "path": "column.maxCount",
+          "key": "maxCount",
+          "label": "柱数量上限",
+          "unit": "根",
+          "min": 1,
+          "max": 200,
+          "step": 1,
+          "admin": true,
+          "help": "一个方案最多几根柱；入口禁用并说明，导入超限整份拒绝",
+          "default": 50
+        },
+        {
+          "path": "column.defaultSideM",
+          "key": "defaultSideM",
+          "label": "柱默认边长",
+          "unit": "m",
+          "min": 0.2,
+          "max": 3,
+          "step": 0.05,
+          "admin": true,
+          "help": "单击放置时默认的 0.5×0.5 m；拖两角画则按实际矩形",
+          "default": 0.5
+        }
+      ]
+    },
+    {
+      "id": "scheme",
+      "label": "方案文件",
+      "help": "导入导出的限制（写入端/读取端共用一份）",
+      "params": [
+        {
+          "path": "scheme.maxFileBytes",
+          "key": "maxFileBytes",
+          "label": "导入文件上限",
+          "unit": "B",
+          "min": 10000,
+          "max": 50000000,
+          "step": 1000,
+          "admin": true,
+          "help": "导入方案文件的字节上限",
+          "default": 1000000
+        },
+        {
+          "path": "scheme.maxCoordM",
+          "key": "maxCoordM",
+          "label": "坐标绝对值上限",
+          "unit": "m",
+          "min": 5,
+          "max": 200,
+          "step": 1,
+          "admin": true,
+          "help": "读文件时拒绝这个范围外的坐标（房间最大 20 m，留 2 m 余量）",
+          "default": 22
+        },
+        {
+          "path": "scheme.minWallLengthM",
+          "key": "minWallLengthM",
+          "label": "最短墙长",
+          "unit": "m",
+          "min": 0.01,
+          "max": 2,
+          "step": 0.01,
+          "admin": true,
+          "help": "比这更短的墙直接拒绝（画不出、也没意义）",
+          "default": 0.1
+        }
+      ]
+    },
+    {
+      "id": "door",
+      "label": "设备柜门净空",
+      "help": "**设备柜门**能开多大算\"能用\"（见 设计决策记录规则 7；与建筑门洞无关）",
+      "params": [
+        {
+          "path": "door.openOkDeg",
+          "key": "openOkDeg",
+          "label": "绿灯阈值",
+          "unit": "°",
+          "min": 0,
+          "max": 180,
+          "step": 1,
+          "admin": true,
+          "help": "柜门能开到这么大就算\"不受阻\"。用户 2026-09-21 拍板 90°：门要能开到底才叫能用",
+          "default": 90
+        },
+        {
+          "path": "door.openWarnDeg",
+          "key": "openWarnDeg",
+          "label": "黄灯阈值",
+          "unit": "°",
+          "min": 0,
+          "max": 180,
+          "step": 1,
+          "admin": true,
+          "help": "柜门：低于绿灯阈值、高于这个值 → 黄灯（能开但会挡）",
+          "default": 60
+        },
+        {
+          "path": "door.sweepStepDeg",
+          "key": "sweepStepDeg",
+          "label": "扫掠步长",
+          "unit": "°",
+          "min": 0.5,
+          "max": 15,
+          "step": 0.5,
+          "admin": false,
+          "help": "逐度扫掠的精度。调粗会算得快但角度偏小，Java 侧必须同口径",
+          "default": 1
+        },
+        {
+          "path": "door.freeTolDeg",
+          "key": "freeTolDeg",
+          "label": "扫掠容差",
+          "unit": "°",
+          "min": 0,
+          "max": 5,
+          "step": 0.1,
+          "admin": false,
+          "help": "判定\"这一帧撞上了\"的几何容差",
+          "default": 0.5
+        },
+        {
+          "path": "door.amountMin",
+          "key": "amountMin",
+          "label": "关门位置",
+          "unit": "",
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "admin": false,
+          "help": "开门比例的闭端（原型 0=关）",
+          "default": 0
+        },
+        {
+          "path": "door.amountMax",
+          "key": "amountMax",
+          "label": "全开位置",
+          "unit": "",
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "admin": false,
+          "help": "开门比例的开端（原型 1=全开）",
+          "default": 1
+        }
+      ]
+    },
+    {
+      "id": "opening",
+      "label": "洞口（门洞 / 窗）",
+      "help": "建筑洞口（墙上的开口）的默认尺寸与放置规则 —— 与设备柜门 cfg.door.* 是两回事。门洞与窗共用这一组里的 `wallEdgeGapM`（离墙角间隙＝框要有安装面，是同一个物理量，禁止双真源）",
+      "params": [
+        {
+          "path": "opening.defaultWidthM",
+          "key": "defaultWidthM",
+          "label": "门洞默认净宽",
+          "unit": "m",
+          "min": 0.6,
+          "max": 3,
+          "step": 0.05,
+          "admin": true,
+          "help": "新放的门洞默认多宽。用户 2026-10-09 拍板 0.9 m（无障碍门下界，设备推行够用）",
+          "default": 0.9
+        },
+        {
+          "path": "opening.defaultHeightM",
+          "key": "defaultHeightM",
+          "label": "门洞默认净高",
+          "unit": "m",
+          "min": 1.8,
+          "max": 3.5,
+          "step": 0.05,
+          "admin": true,
+          "help": "新放的门洞默认多高（国标门高常用模数 2.1 m）",
+          "default": 2.1
+        },
+        {
+          "path": "opening.minWidthM",
+          "key": "minWidthM",
+          "label": "门洞最小净宽",
+          "unit": "m",
+          "min": 0.3,
+          "max": 2,
+          "step": 0.05,
+          "admin": true,
+          "help": "净宽下限：0.6 m 是侧身通行极限（肩宽 0.48 + 余量），更窄的洞在漫游里过不去",
+          "default": 0.6
+        },
+        {
+          "path": "opening.maxWidthM",
+          "key": "maxWidthM",
+          "label": "门洞最大净宽",
+          "unit": "m",
+          "min": 1,
+          "max": 6,
+          "step": 0.05,
+          "admin": true,
+          "help": "净宽上限：更宽的开口在建筑上算\"通道\"不算门",
+          "default": 3
+        },
+        {
+          "path": "opening.wallEdgeGapM",
+          "key": "wallEdgeGapM",
+          "label": "离墙角最小间隙",
+          "unit": "m",
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "admin": true,
+          "help": "洞口边缘离墙端（墙角/T 形接头）至少留多少 —— 门框要有安装面。**无国标条文**，工程惯例",
+          "default": 0.1
+        },
+        {
+          "path": "opening.maxPerWall",
+          "key": "maxPerWall",
+          "label": "每墙门洞上限",
+          "unit": "个",
+          "min": 1,
+          "max": 10,
+          "step": 1,
+          "admin": true,
+          "help": "一面墙上最多几个洞（超过会让墙段碎片化）。**无外部依据**，工程判断",
+          "default": 3
+        },
+        {
+          "path": "opening.frameThicknessM",
+          "key": "frameThicknessM",
+          "label": "门框厚度",
+          "unit": "m",
+          "min": 0,
+          "max": 0.2,
+          "step": 0.005,
+          "admin": false,
+          "help": "预留项（v1 未启用，改了不会有效果，所以标为不可改）：门框每侧厚度。v1 不做门框所以默认 0（净宽 = 洞宽）；做门框时只改这个默认值 + 一处减法",
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "window",
+      "label": "窗",
+      "help": "矩形窗（墙上的洞口 + 离地高度）的默认尺寸与放置规则 —— 与门洞共用同一套洞口机制，但窗**不能走人**（不挖碰撞），见 设计决策记录 §三",
+      "params": [
+        {
+          "path": "window.defaultWidthM",
+          "key": "defaultWidthM",
+          "label": "窗默认净宽",
+          "unit": "m",
+          "min": 0.3,
+          "max": 6,
+          "step": 0.05,
+          "admin": true,
+          "help": "新放的窗默认多宽（1.20 m = 3M 模数，GB/T 5824-2021 民用建筑窗洞口优先尺寸里最常用的一档）",
+          "default": 1.2
+        },
+        {
+          "path": "window.defaultHeightM",
+          "key": "defaultHeightM",
+          "label": "窗默认净高",
+          "unit": "m",
+          "min": 0.3,
+          "max": 6,
+          "step": 0.05,
+          "admin": true,
+          "help": "新放的窗默认多高（1.50 m = 3M 模数；窗台 0.9 + 窗高 1.5 = 2.4 m，常规层高下梁下还留得住）",
+          "default": 1.5
+        },
+        {
+          "path": "window.defaultSillM",
+          "key": "defaultSillM",
+          "label": "窗默认离地高度",
+          "unit": "m",
+          "min": 0,
+          "max": 2.5,
+          "step": 0.05,
+          "admin": true,
+          "help": "新放的窗默认离地多高（从**地面**量到洞口**下沿**）。0.90 m 出自 GB 50096-2011 §3.9.1 的防护临界值",
+          "default": 0.9
+        },
+        {
+          "path": "window.minWidthM",
+          "key": "minWidthM",
+          "label": "窗最小净宽",
+          "unit": "m",
+          "min": 0.2,
+          "max": 2,
+          "step": 0.05,
+          "admin": true,
+          "help": "窗净宽下限（0.6 m 是小窗的常见工程规格）。**它不影响碰撞** —— 窗本来就不能走人，窄一点没有通行问题",
+          "default": 0.6
+        },
+        {
+          "path": "window.maxWidthM",
+          "key": "maxWidthM",
+          "label": "窗最大净宽",
+          "unit": "m",
+          "min": 0.6,
+          "max": 6,
+          "step": 0.05,
+          "admin": true,
+          "help": "窗净宽上限：更宽的洞口由门窗生产企业按分格处理，不在本工具口径内",
+          "default": 3
+        },
+        {
+          "path": "window.minSillM",
+          "key": "minSillM",
+          "label": "窗最小离地高度",
+          "unit": "m",
+          "min": 0,
+          "max": 1.2,
+          "step": 0.05,
+          "admin": true,
+          "help": "离地下限：低于 0.3 m 的洞人一步就跨过去了，按建筑口径它该叫门。**无国标条文**，工程判断",
+          "default": 0.3
+        },
+        {
+          "path": "window.maxSillM",
+          "key": "maxSillM",
+          "label": "窗最大离地高度",
+          "unit": "m",
+          "min": 0.6,
+          "max": 3.5,
+          "step": 0.05,
+          "admin": true,
+          "help": "离地上限（策略护栏，防「贴到墙顶的窗」）；真正管住上限的是结构约束「离地 + 净高 ≤ 墙高」。**无国标条文**",
+          "default": 2.5
+        },
+        {
+          "path": "window.maxPerWall",
+          "key": "maxPerWall",
+          "label": "每墙窗上限",
+          "unit": "个",
+          "min": 1,
+          "max": 10,
+          "step": 1,
+          "admin": true,
+          "help": "一面墙上最多几扇窗（与门洞**各算各的**：同一面墙可以 3 门 + 3 窗；格式总上限仍是每墙 10 个洞口）。**无外部依据**，工程判断",
+          "default": 3
+        }
+      ]
+    },
+    {
+      "id": "walk",
+      "label": "第一人称漫游",
+      "help": "走进房间时的碰撞与视角参数",
+      "params": [
+        {
+          "path": "walk.radiusM",
+          "key": "radiusM",
+          "label": "人体半径",
+          "unit": "m",
+          "min": 0.1,
+          "max": 0.6,
+          "step": 0.01,
+          "admin": true,
+          "help": "漫游碰撞用的圆柱半径（0.24 m，肩宽级别）",
+          "default": 0.24
+        },
+        {
+          "path": "walk.eyeM",
+          "key": "eyeM",
+          "label": "视点高度",
+          "unit": "m",
+          "min": 1.2,
+          "max": 2,
+          "step": 0.05,
+          "admin": true,
+          "help": "第一人称的眼睛高度（原来是写在 scene3d.js 里的硬编码 1.6，抬进参数表才符合\"参数表是唯一真源\"）",
+          "default": 1.6
+        },
+        {
+          "path": "walk.wallClearanceM",
+          "key": "wallClearanceM",
+          "label": "离墙间隙",
+          "unit": "m",
+          "min": 0,
+          "max": 0.3,
+          "step": 0.01,
+          "admin": true,
+          "help": "贴墙走时额外留的余量",
+          "default": 0.06
+        },
+        {
+          "path": "walk.doorBarrierMinM",
+          "key": "doorBarrierMinM",
+          "label": "门挡人下界",
+          "unit": "m",
+          "min": 0,
+          "max": 1,
+          "step": 0.01,
+          "admin": true,
+          "help": "门只在人体高度区间内算障碍：低于这个高度（如底座缝）不挡人",
+          "default": 0.08
+        },
+        {
+          "path": "walk.doorBarrierMaxM",
+          "key": "doorBarrierMaxM",
+          "label": "门挡人上界",
+          "unit": "m",
+          "min": 0.5,
+          "max": 3,
+          "step": 0.05,
+          "admin": true,
+          "help": "高于这个高度（如顶盖）不挡人",
+          "default": 1.8
+        },
+        {
+          "path": "walk.stepMaxM",
+          "key": "stepMaxM",
+          "label": "单步最大位移",
+          "unit": "m",
+          "min": 0.01,
+          "max": 0.5,
+          "step": 0.01,
+          "admin": false,
+          "help": "移动时把位移切成小步做连续碰撞检测（防穿模）",
+          "default": 0.06
+        },
+        {
+          "path": "walk.spawnStepM",
+          "key": "spawnStepM",
+          "label": "出生点扫描步长",
+          "unit": "m",
+          "min": 0.1,
+          "max": 2,
+          "step": 0.05,
+          "admin": false,
+          "help": "找站立位置时的网格扫描步长",
+          "default": 0.35
+        }
+      ]
+    },
+    {
+      "id": "route",
+      "label": "动线",
+      "help": "人员地面动线（P1 内核）：数量、拐点上限、寻路栅格与长度护栏",
+      "params": [
+        {
+          "path": "route.maxRoutes",
+          "key": "maxRoutes",
+          "label": "动线数量上限",
+          "unit": "条",
+          "min": 1,
+          "max": 20,
+          "step": 1,
+          "admin": true,
+          "help": "一个方案最多几条动线（v1 冻结 6 条；超过只做防御）",
+          "default": 6
+        },
+        {
+          "path": "route.maxPoints",
+          "key": "maxPoints",
+          "label": "单条动线拐点上限",
+          "unit": "个",
+          "min": 2,
+          "max": 64,
+          "step": 1,
+          "admin": true,
+          "help": "一条动线最多几个用户点（v1 冻结 20；设计决策记录的 64 只作防御上限）",
+          "default": 20
+        },
+        {
+          "path": "route.gridM",
+          "key": "gridM",
+          "label": "寻路栅格",
+          "unit": "m",
+          "min": 0.05,
+          "max": 0.5,
+          "step": 0.01,
+          "admin": true,
+          "help": "A* 栅格边长（0.10 m）。改小更精确但更慢；网格只负责找路，合法性由精确几何复核",
+          "default": 0.1
+        },
+        {
+          "path": "route.arrowEveryM",
+          "key": "arrowEveryM",
+          "label": "箭头间距",
+          "unit": "m",
+          "min": 0.3,
+          "max": 10,
+          "step": 0.1,
+          "admin": true,
+          "help": "2D/3D 地面箭头每隔多远一个（P2/P3 用；P1 只提供参数）",
+          "default": 1.5
+        },
+        {
+          "path": "route.maxLengthM",
+          "key": "maxLengthM",
+          "label": "动线长度上限",
+          "unit": "m",
+          "min": 10,
+          "max": 2000,
+          "step": 10,
+          "admin": true,
+          "help": "路径总长超过这个数就报 route-too-long（防异常布局把规划线画到离谱）",
+          "default": 500
+        },
+        {
+          "path": "route.minAnchorGapM",
+          "key": "minAnchorGapM",
+          "label": "相邻用户点最小间距",
+          "unit": "m",
+          "min": 0.01,
+          "max": 1,
+          "step": 0.01,
+          "admin": true,
+          "help": "两个相邻用户点距离小于这个值视为重复点，整条动线拒绝（不静默合并）",
+          "default": 0.05
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "label": "模型资产",
+      "help": "模型验收阈值（与 设计决策记录交付规范一致）",
+      "params": [
+        {
+          "path": "model.anisotropyWarn",
+          "key": "anisotropyWarn",
+          "label": "比例失真告警",
+          "unit": "倍",
+          "min": 1,
+          "max": 2,
+          "step": 0.01,
+          "admin": true,
+          "help": "按包围盒缩放时各轴比例差超过这个倍数就告警（2%）：尺寸不可信的信号",
+          "default": 1.02
+        },
+        {
+          "path": "model.envelopeTolMm",
+          "key": "envelopeTolMm",
+          "label": "尺寸对账容差",
+          "unit": "mm",
+          "min": 0,
+          "max": 50,
+          "step": 1,
+          "admin": true,
+          "help": "1:1 模型的声明尺寸与实测尺寸**逐轴**相差这么多 mm 以内算对账通过。维护端角标、写入侧判定与设计端加载体检共用这一把尺子（第 3 轮审查 C-10：原来是 1 mm 与 5 mm 两个数，同一个模型在两处得到相反结论）",
+          "default": 1
+        }
+      ]
+    },
+    {
+      "id": "history",
+      "label": "撤销重做",
+      "help": "历史栈深度",
+      "params": [
+        {
+          "path": "history.maxSteps",
+          "key": "maxSteps",
+          "label": "历史深度",
+          "unit": "步",
+          "min": 1,
+          "max": 500,
+          "step": 1,
+          "admin": true,
+          "help": "最多能撤销多少步（原型 40）",
+          "default": 40
+        }
+      ]
+    }
+  ],
+  "flat": [
+    {
+      "path": "room.minW",
+      "label": "最小长度",
+      "unit": "m",
+      "min": 1,
+      "max": 100,
+      "step": 0.1,
+      "admin": true,
+      "help": "房间长度下限",
+      "default": 3
+    },
+    {
+      "path": "room.maxW",
+      "label": "最大长度",
+      "unit": "m",
+      "min": 1,
+      "max": 200,
+      "step": 0.1,
+      "admin": true,
+      "help": "房间长度上限",
+      "default": 20
+    },
+    {
+      "path": "room.minD",
+      "label": "最小宽度",
+      "unit": "m",
+      "min": 1,
+      "max": 100,
+      "step": 0.1,
+      "admin": true,
+      "help": "房间宽度下限",
+      "default": 3
+    },
+    {
+      "path": "room.maxD",
+      "label": "最大宽度",
+      "unit": "m",
+      "min": 1,
+      "max": 200,
+      "step": 0.1,
+      "admin": true,
+      "help": "房间宽度上限",
+      "default": 20
+    },
+    {
+      "path": "room.minH",
+      "label": "最小层高",
+      "unit": "m",
+      "min": 1,
+      "max": 20,
+      "step": 0.1,
+      "admin": true,
+      "help": "墙高下限",
+      "default": 2
+    },
+    {
+      "path": "room.maxH",
+      "label": "最大层高",
+      "unit": "m",
+      "min": 1,
+      "max": 20,
+      "step": 0.1,
+      "admin": true,
+      "help": "墙高上限",
+      "default": 5
+    },
+    {
+      "path": "room.nameMaxChars",
+      "label": "房间名长度",
+      "unit": "字",
+      "min": 2,
+      "max": 40,
+      "step": 1,
+      "admin": true,
+      "help": "房间名最多多少个字（多房间后才有房间名；默认名「未命名房间」不计）",
+      "default": 12
+    },
+    {
+      "path": "room.minAreaM2",
+      "label": "窄缝阈值",
+      "unit": "㎡",
+      "min": 0,
+      "max": 10,
+      "step": 0.1,
+      "admin": true,
+      "help": "小于这个面积的房面在列表里标成「窄缝」——**只标不藏**（两面墙贴太近会挤出一条缝）",
+      "default": 0.5
+    },
+    {
+      "path": "space.overlapTolM",
+      "label": "重叠容差",
+      "unit": "m",
+      "min": 0,
+      "max": 0.05,
+      "step": 0.001,
+      "admin": true,
+      "help": "两台设备占地矩形重叠多少以内不算重叠（5 mm）",
+      "default": 0.005
+    },
+    {
+      "path": "space.wallThicknessM",
+      "label": "墙厚",
+      "unit": "m",
+      "min": 0.05,
+      "max": 0.5,
+      "step": 0.01,
+      "admin": true,
+      "help": "内墙在平面上的厚度，压墙判定与建模都用它",
+      "default": 0.12
+    },
+    {
+      "path": "space.snapM",
+      "label": "位置吸附",
+      "unit": "m",
+      "min": 0.01,
+      "max": 1,
+      "step": 0.01,
+      "admin": true,
+      "help": "拖动时位置吸附到多少的整数倍",
+      "default": 0.1
+    },
+    {
+      "path": "space.rotateStepDeg",
+      "label": "旋转步长",
+      "unit": "°",
+      "min": 1,
+      "max": 45,
+      "step": 1,
+      "admin": true,
+      "help": "按一下旋转键转多少度",
+      "default": 5
+    },
+    {
+      "path": "space.wallOpacity",
+      "label": "外墙默认不透明度",
+      "unit": "",
+      "min": 0.2,
+      "max": 1,
+      "step": 0.05,
+      "admin": true,
+      "help": "\"没选过外观档位\"的方案用这个（1 = 实心）。半透明是让交付图更好看的美观选项，档位本身在方案里存的是 solid/half/light",
+      "default": 1
+    },
+    {
+      "path": "layout.maxItems",
+      "label": "设备上限",
+      "unit": "台",
+      "min": 1,
+      "max": 500,
+      "step": 1,
+      "admin": true,
+      "help": "一个方案最多放几台（原型 100，性能与方案文件大小都吃这个）",
+      "default": 100
+    },
+    {
+      "path": "layout.maxWalls",
+      "label": "内墙上限",
+      "unit": "面",
+      "min": 1,
+      "max": 500,
+      "step": 1,
+      "admin": true,
+      "help": "一个方案最多几面内墙",
+      "default": 100
+    },
+    {
+      "path": "layout.autoZ0",
+      "label": "自动摆放起始边距",
+      "unit": "m",
+      "min": 0,
+      "max": 5,
+      "step": 0.1,
+      "admin": true,
+      "help": "自动摆放时第一台的边距",
+      "default": 0.7
+    },
+    {
+      "path": "layout.autoDz",
+      "label": "自动摆放行距",
+      "unit": "m",
+      "min": 0.2,
+      "max": 5,
+      "step": 0.1,
+      "admin": true,
+      "help": "自动摆放相邻两台的间距",
+      "default": 1.1
+    },
+    {
+      "path": "layout.autoX0",
+      "label": "自动摆放起始横向边距",
+      "unit": "m",
+      "min": 0,
+      "max": 5,
+      "step": 0.1,
+      "admin": true,
+      "help": "（原型按行列网格摆放，横向与纵向分别有起始值）",
+      "default": 0.7
+    },
+    {
+      "path": "layout.autoDx",
+      "label": "自动摆放列距",
+      "unit": "m",
+      "min": 0.2,
+      "max": 5,
+      "step": 0.1,
+      "admin": true,
+      "help": "自动摆放同排相邻两台的间距",
+      "default": 1.2
+    },
+    {
+      "path": "layout.autoMargin",
+      "label": "自动摆放末端留白",
+      "unit": "m",
+      "min": 0,
+      "max": 5,
+      "step": 0.1,
+      "admin": true,
+      "help": "离墙留出的空当，保证不会一摆就压墙",
+      "default": 0.5
+    },
+    {
+      "path": "column.minSideM",
+      "label": "柱最小边长",
+      "unit": "m",
+      "min": 0.05,
+      "max": 1,
+      "step": 0.01,
+      "admin": true,
+      "help": "矩形柱任一边的下限（0.20 m）；小于它的柱在结构上不成立",
+      "default": 0.2
+    },
+    {
+      "path": "column.maxSideM",
+      "label": "柱最大边长",
+      "unit": "m",
+      "min": 0.5,
+      "max": 10,
+      "step": 0.1,
+      "admin": true,
+      "help": "矩形柱任一边的上限（3.00 m）；更大的构件按墙体处理",
+      "default": 3
+    },
+    {
+      "path": "column.maxCount",
+      "label": "柱数量上限",
+      "unit": "根",
+      "min": 1,
+      "max": 200,
+      "step": 1,
+      "admin": true,
+      "help": "一个方案最多几根柱；入口禁用并说明，导入超限整份拒绝",
+      "default": 50
+    },
+    {
+      "path": "column.defaultSideM",
+      "label": "柱默认边长",
+      "unit": "m",
+      "min": 0.2,
+      "max": 3,
+      "step": 0.05,
+      "admin": true,
+      "help": "单击放置时默认的 0.5×0.5 m；拖两角画则按实际矩形",
+      "default": 0.5
+    },
+    {
+      "path": "scheme.maxFileBytes",
+      "label": "导入文件上限",
+      "unit": "B",
+      "min": 10000,
+      "max": 50000000,
+      "step": 1000,
+      "admin": true,
+      "help": "导入方案文件的字节上限",
+      "default": 1000000
+    },
+    {
+      "path": "scheme.maxCoordM",
+      "label": "坐标绝对值上限",
+      "unit": "m",
+      "min": 5,
+      "max": 200,
+      "step": 1,
+      "admin": true,
+      "help": "读文件时拒绝这个范围外的坐标（房间最大 20 m，留 2 m 余量）",
+      "default": 22
+    },
+    {
+      "path": "scheme.minWallLengthM",
+      "label": "最短墙长",
+      "unit": "m",
+      "min": 0.01,
+      "max": 2,
+      "step": 0.01,
+      "admin": true,
+      "help": "比这更短的墙直接拒绝（画不出、也没意义）",
+      "default": 0.1
+    },
+    {
+      "path": "door.openOkDeg",
+      "label": "绿灯阈值",
+      "unit": "°",
+      "min": 0,
+      "max": 180,
+      "step": 1,
+      "admin": true,
+      "help": "柜门能开到这么大就算\"不受阻\"。用户 2026-09-21 拍板 90°：门要能开到底才叫能用",
+      "default": 90
+    },
+    {
+      "path": "door.openWarnDeg",
+      "label": "黄灯阈值",
+      "unit": "°",
+      "min": 0,
+      "max": 180,
+      "step": 1,
+      "admin": true,
+      "help": "柜门：低于绿灯阈值、高于这个值 → 黄灯（能开但会挡）",
+      "default": 60
+    },
+    {
+      "path": "door.sweepStepDeg",
+      "label": "扫掠步长",
+      "unit": "°",
+      "min": 0.5,
+      "max": 15,
+      "step": 0.5,
+      "admin": false,
+      "help": "逐度扫掠的精度。调粗会算得快但角度偏小，Java 侧必须同口径",
+      "default": 1
+    },
+    {
+      "path": "door.freeTolDeg",
+      "label": "扫掠容差",
+      "unit": "°",
+      "min": 0,
+      "max": 5,
+      "step": 0.1,
+      "admin": false,
+      "help": "判定\"这一帧撞上了\"的几何容差",
+      "default": 0.5
+    },
+    {
+      "path": "door.amountMin",
+      "label": "关门位置",
+      "unit": "",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "admin": false,
+      "help": "开门比例的闭端（原型 0=关）",
+      "default": 0
+    },
+    {
+      "path": "door.amountMax",
+      "label": "全开位置",
+      "unit": "",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "admin": false,
+      "help": "开门比例的开端（原型 1=全开）",
+      "default": 1
+    },
+    {
+      "path": "opening.defaultWidthM",
+      "label": "门洞默认净宽",
+      "unit": "m",
+      "min": 0.6,
+      "max": 3,
+      "step": 0.05,
+      "admin": true,
+      "help": "新放的门洞默认多宽。用户 2026-10-09 拍板 0.9 m（无障碍门下界，设备推行够用）",
+      "default": 0.9
+    },
+    {
+      "path": "opening.defaultHeightM",
+      "label": "门洞默认净高",
+      "unit": "m",
+      "min": 1.8,
+      "max": 3.5,
+      "step": 0.05,
+      "admin": true,
+      "help": "新放的门洞默认多高（国标门高常用模数 2.1 m）",
+      "default": 2.1
+    },
+    {
+      "path": "opening.minWidthM",
+      "label": "门洞最小净宽",
+      "unit": "m",
+      "min": 0.3,
+      "max": 2,
+      "step": 0.05,
+      "admin": true,
+      "help": "净宽下限：0.6 m 是侧身通行极限（肩宽 0.48 + 余量），更窄的洞在漫游里过不去",
+      "default": 0.6
+    },
+    {
+      "path": "opening.maxWidthM",
+      "label": "门洞最大净宽",
+      "unit": "m",
+      "min": 1,
+      "max": 6,
+      "step": 0.05,
+      "admin": true,
+      "help": "净宽上限：更宽的开口在建筑上算\"通道\"不算门",
+      "default": 3
+    },
+    {
+      "path": "opening.wallEdgeGapM",
+      "label": "离墙角最小间隙",
+      "unit": "m",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "admin": true,
+      "help": "洞口边缘离墙端（墙角/T 形接头）至少留多少 —— 门框要有安装面。**无国标条文**，工程惯例",
+      "default": 0.1
+    },
+    {
+      "path": "opening.maxPerWall",
+      "label": "每墙门洞上限",
+      "unit": "个",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "admin": true,
+      "help": "一面墙上最多几个洞（超过会让墙段碎片化）。**无外部依据**，工程判断",
+      "default": 3
+    },
+    {
+      "path": "opening.frameThicknessM",
+      "label": "门框厚度",
+      "unit": "m",
+      "min": 0,
+      "max": 0.2,
+      "step": 0.005,
+      "admin": false,
+      "help": "预留项（v1 未启用，改了不会有效果，所以标为不可改）：门框每侧厚度。v1 不做门框所以默认 0（净宽 = 洞宽）；做门框时只改这个默认值 + 一处减法",
+      "default": 0
+    },
+    {
+      "path": "window.defaultWidthM",
+      "label": "窗默认净宽",
+      "unit": "m",
+      "min": 0.3,
+      "max": 6,
+      "step": 0.05,
+      "admin": true,
+      "help": "新放的窗默认多宽（1.20 m = 3M 模数，GB/T 5824-2021 民用建筑窗洞口优先尺寸里最常用的一档）",
+      "default": 1.2
+    },
+    {
+      "path": "window.defaultHeightM",
+      "label": "窗默认净高",
+      "unit": "m",
+      "min": 0.3,
+      "max": 6,
+      "step": 0.05,
+      "admin": true,
+      "help": "新放的窗默认多高（1.50 m = 3M 模数；窗台 0.9 + 窗高 1.5 = 2.4 m，常规层高下梁下还留得住）",
+      "default": 1.5
+    },
+    {
+      "path": "window.defaultSillM",
+      "label": "窗默认离地高度",
+      "unit": "m",
+      "min": 0,
+      "max": 2.5,
+      "step": 0.05,
+      "admin": true,
+      "help": "新放的窗默认离地多高（从**地面**量到洞口**下沿**）。0.90 m 出自 GB 50096-2011 §3.9.1 的防护临界值",
+      "default": 0.9
+    },
+    {
+      "path": "window.minWidthM",
+      "label": "窗最小净宽",
+      "unit": "m",
+      "min": 0.2,
+      "max": 2,
+      "step": 0.05,
+      "admin": true,
+      "help": "窗净宽下限（0.6 m 是小窗的常见工程规格）。**它不影响碰撞** —— 窗本来就不能走人，窄一点没有通行问题",
+      "default": 0.6
+    },
+    {
+      "path": "window.maxWidthM",
+      "label": "窗最大净宽",
+      "unit": "m",
+      "min": 0.6,
+      "max": 6,
+      "step": 0.05,
+      "admin": true,
+      "help": "窗净宽上限：更宽的洞口由门窗生产企业按分格处理，不在本工具口径内",
+      "default": 3
+    },
+    {
+      "path": "window.minSillM",
+      "label": "窗最小离地高度",
+      "unit": "m",
+      "min": 0,
+      "max": 1.2,
+      "step": 0.05,
+      "admin": true,
+      "help": "离地下限：低于 0.3 m 的洞人一步就跨过去了，按建筑口径它该叫门。**无国标条文**，工程判断",
+      "default": 0.3
+    },
+    {
+      "path": "window.maxSillM",
+      "label": "窗最大离地高度",
+      "unit": "m",
+      "min": 0.6,
+      "max": 3.5,
+      "step": 0.05,
+      "admin": true,
+      "help": "离地上限（策略护栏，防「贴到墙顶的窗」）；真正管住上限的是结构约束「离地 + 净高 ≤ 墙高」。**无国标条文**",
+      "default": 2.5
+    },
+    {
+      "path": "window.maxPerWall",
+      "label": "每墙窗上限",
+      "unit": "个",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "admin": true,
+      "help": "一面墙上最多几扇窗（与门洞**各算各的**：同一面墙可以 3 门 + 3 窗；格式总上限仍是每墙 10 个洞口）。**无外部依据**，工程判断",
+      "default": 3
+    },
+    {
+      "path": "walk.radiusM",
+      "label": "人体半径",
+      "unit": "m",
+      "min": 0.1,
+      "max": 0.6,
+      "step": 0.01,
+      "admin": true,
+      "help": "漫游碰撞用的圆柱半径（0.24 m，肩宽级别）",
+      "default": 0.24
+    },
+    {
+      "path": "walk.eyeM",
+      "label": "视点高度",
+      "unit": "m",
+      "min": 1.2,
+      "max": 2,
+      "step": 0.05,
+      "admin": true,
+      "help": "第一人称的眼睛高度（原来是写在 scene3d.js 里的硬编码 1.6，抬进参数表才符合\"参数表是唯一真源\"）",
+      "default": 1.6
+    },
+    {
+      "path": "walk.wallClearanceM",
+      "label": "离墙间隙",
+      "unit": "m",
+      "min": 0,
+      "max": 0.3,
+      "step": 0.01,
+      "admin": true,
+      "help": "贴墙走时额外留的余量",
+      "default": 0.06
+    },
+    {
+      "path": "walk.doorBarrierMinM",
+      "label": "门挡人下界",
+      "unit": "m",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "admin": true,
+      "help": "门只在人体高度区间内算障碍：低于这个高度（如底座缝）不挡人",
+      "default": 0.08
+    },
+    {
+      "path": "walk.doorBarrierMaxM",
+      "label": "门挡人上界",
+      "unit": "m",
+      "min": 0.5,
+      "max": 3,
+      "step": 0.05,
+      "admin": true,
+      "help": "高于这个高度（如顶盖）不挡人",
+      "default": 1.8
+    },
+    {
+      "path": "walk.stepMaxM",
+      "label": "单步最大位移",
+      "unit": "m",
+      "min": 0.01,
+      "max": 0.5,
+      "step": 0.01,
+      "admin": false,
+      "help": "移动时把位移切成小步做连续碰撞检测（防穿模）",
+      "default": 0.06
+    },
+    {
+      "path": "walk.spawnStepM",
+      "label": "出生点扫描步长",
+      "unit": "m",
+      "min": 0.1,
+      "max": 2,
+      "step": 0.05,
+      "admin": false,
+      "help": "找站立位置时的网格扫描步长",
+      "default": 0.35
+    },
+    {
+      "path": "route.maxRoutes",
+      "label": "动线数量上限",
+      "unit": "条",
+      "min": 1,
+      "max": 20,
+      "step": 1,
+      "admin": true,
+      "help": "一个方案最多几条动线（v1 冻结 6 条；超过只做防御）",
+      "default": 6
+    },
+    {
+      "path": "route.maxPoints",
+      "label": "单条动线拐点上限",
+      "unit": "个",
+      "min": 2,
+      "max": 64,
+      "step": 1,
+      "admin": true,
+      "help": "一条动线最多几个用户点（v1 冻结 20；设计决策记录的 64 只作防御上限）",
+      "default": 20
+    },
+    {
+      "path": "route.gridM",
+      "label": "寻路栅格",
+      "unit": "m",
+      "min": 0.05,
+      "max": 0.5,
+      "step": 0.01,
+      "admin": true,
+      "help": "A* 栅格边长（0.10 m）。改小更精确但更慢；网格只负责找路，合法性由精确几何复核",
+      "default": 0.1
+    },
+    {
+      "path": "route.arrowEveryM",
+      "label": "箭头间距",
+      "unit": "m",
+      "min": 0.3,
+      "max": 10,
+      "step": 0.1,
+      "admin": true,
+      "help": "2D/3D 地面箭头每隔多远一个（P2/P3 用；P1 只提供参数）",
+      "default": 1.5
+    },
+    {
+      "path": "route.maxLengthM",
+      "label": "动线长度上限",
+      "unit": "m",
+      "min": 10,
+      "max": 2000,
+      "step": 10,
+      "admin": true,
+      "help": "路径总长超过这个数就报 route-too-long（防异常布局把规划线画到离谱）",
+      "default": 500
+    },
+    {
+      "path": "route.minAnchorGapM",
+      "label": "相邻用户点最小间距",
+      "unit": "m",
+      "min": 0.01,
+      "max": 1,
+      "step": 0.01,
+      "admin": true,
+      "help": "两个相邻用户点距离小于这个值视为重复点，整条动线拒绝（不静默合并）",
+      "default": 0.05
+    },
+    {
+      "path": "model.anisotropyWarn",
+      "label": "比例失真告警",
+      "unit": "倍",
+      "min": 1,
+      "max": 2,
+      "step": 0.01,
+      "admin": true,
+      "help": "按包围盒缩放时各轴比例差超过这个倍数就告警（2%）：尺寸不可信的信号",
+      "default": 1.02
+    },
+    {
+      "path": "model.envelopeTolMm",
+      "label": "尺寸对账容差",
+      "unit": "mm",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "admin": true,
+      "help": "1:1 模型的声明尺寸与实测尺寸**逐轴**相差这么多 mm 以内算对账通过。维护端角标、写入侧判定与设计端加载体检共用这一把尺子（第 3 轮审查 C-10：原来是 1 mm 与 5 mm 两个数，同一个模型在两处得到相反结论）",
+      "default": 1
+    },
+    {
+      "path": "history.maxSteps",
+      "label": "历史深度",
+      "unit": "步",
+      "min": 1,
+      "max": 500,
+      "step": 1,
+      "admin": true,
+      "help": "最多能撤销多少步（原型 40）",
+      "default": 40
+    }
+  ]
+}

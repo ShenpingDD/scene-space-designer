@@ -1,0 +1,252 @@
+{
+ "note": "演示数据（公开仓）：由 tools/models/verify-models.py 的口径生成；只登记公开仓内真实存在的示例模型 demo-blender-001（一个带真铰链门的合成模型）。",
+ "generatedAt": "2026-11-24",
+ "units": "mm",
+ "limits": {
+  "triangles": 60000,
+  "bytes": 3145728,
+  "textures": 2
+ },
+ "models": [
+  {
+   "productId": "demo-blender",
+   "assetId": "demo-blender-001",
+   "modelCode": "DEMO-BL-100",
+   "file": "assets/optimized/demo-blender-001.lod0.glb",
+   "assetFile": "assets/optimized/demo-blender-001.lod0.glb",
+   "bytes": 3637480,
+   "md5": "e66e5c586b48b71fd8595ad414dacdcf",
+   "generator": "Khronos glTF Blender I/O v4.2.57",
+   "truncated": false,
+   "triangles": 76544,
+   "meshes": 142,
+   "materials": 10,
+   "textures": 0,
+   "nodes": 142,
+   "bboxMm": {
+    "w": 676.0,
+    "h": 1310.5,
+    "d": 672.0
+   },
+   "declaredMm": {
+    "w": 676.0,
+    "h": 1310.5,
+    "d": 672.0
+   },
+   "bboxMinMm": [
+    -338.0,
+    0.0,
+    -336.0
+   ],
+   "bboxMaxMm": [
+    338.0,
+    1310.5,
+    336.0
+   ],
+   "bboxCenterMm": [
+    0.0,
+    655.25,
+    -0.0
+   ],
+   "bboxExact": true,
+   "deltaMm": {
+    "w": 0,
+    "h": 0,
+    "d": 0
+   },
+   "envelopeMode": "1:1",
+   "envelopeOk": true,
+   "budgets": {
+    "triangles": {
+     "limit": 60000,
+     "actual": 76544,
+     "pass": false
+    },
+    "bytes": {
+     "limit": 3145728,
+     "actual": 3637480,
+     "pass": false
+    },
+    "textures": {
+     "limit": 2,
+     "actual": 0,
+     "pass": true
+    }
+   },
+   "doors": [
+    {
+     "node": "door_single",
+     "axis": "y",
+     "angleDeg": 106.0,
+     "pivotMm": [
+      -260.0,
+      190.5,
+      285.0
+     ],
+     "swingRadiusMm": 558.33,
+     "swingUpperMm": 558.33,
+     "closedSizeMm": [
+      556.0,
+      355.0,
+      64.0
+     ],
+     "closedMinMm": [
+      -260.0,
+      190.5,
+      272.0
+     ],
+     "closedMaxMm": [
+      296.0,
+      545.5,
+      336.0
+     ],
+     "openExtraMm": 420.57,
+     "swingsIntoBody": false,
+     "extendsAxis": "x",
+     "geometryExact": true,
+     "sharedPositionAccessor": false,
+     "status": "ok"
+    }
+   ],
+   "anchorNames": [
+    "door_single"
+   ],
+   "anchors": {},
+   "anchorSource": "declared",
+   "anchorOk": true,
+   "structure": {
+    "autoNamed": [],
+    "duplicateNames": [],
+    "orphanHandles": []
+   }
+  }
+ ],
+ "optimized": [
+  {
+   "productId": "demo-blender",
+   "assetId": "demo-blender-001",
+   "modelCode": "DEMO-BL-100",
+   "file": "assets/optimized/demo-blender-001.lod0.glb",
+   "assetFile": "assets/optimized/demo-blender-001.lod0.glb",
+   "bytes": 3637480,
+   "md5": "e66e5c586b48b71fd8595ad414dacdcf",
+   "generator": "Khronos glTF Blender I/O v4.2.57",
+   "truncated": false,
+   "triangles": 76544,
+   "meshes": 142,
+   "materials": 10,
+   "textures": 0,
+   "nodes": 142,
+   "bboxMm": {
+    "w": 676.0,
+    "h": 1310.5,
+    "d": 672.0
+   },
+   "declaredMm": {
+    "w": 676.0,
+    "h": 1310.5,
+    "d": 672.0
+   },
+   "bboxMinMm": [
+    -338.0,
+    0.0,
+    -336.0
+   ],
+   "bboxMaxMm": [
+    338.0,
+    1310.5,
+    336.0
+   ],
+   "bboxCenterMm": [
+    0.0,
+    655.25,
+    -0.0
+   ],
+   "bboxExact": true,
+   "deltaMm": {
+    "w": 0,
+    "h": 0,
+    "d": 0
+   },
+   "envelopeMode": "1:1",
+   "envelopeOk": true,
+   "budgets": {
+    "triangles": {
+     "limit": 60000,
+     "actual": 76544,
+     "pass": false
+    },
+    "bytes": {
+     "limit": 3145728,
+     "actual": 3637480,
+     "pass": false
+    },
+    "textures": {
+     "limit": 2,
+     "actual": 0,
+     "pass": true
+    }
+   },
+   "doors": [
+    {
+     "node": "door_single",
+     "axis": "y",
+     "angleDeg": 106.0,
+     "pivotMm": [
+      -260.0,
+      190.5,
+      285.0
+     ],
+     "swingRadiusMm": 558.33,
+     "swingUpperMm": 558.33,
+     "closedSizeMm": [
+      556.0,
+      355.0,
+      64.0
+     ],
+     "closedMinMm": [
+      -260.0,
+      190.5,
+      272.0
+     ],
+     "closedMaxMm": [
+      296.0,
+      545.5,
+      336.0
+     ],
+     "openExtraMm": 420.57,
+     "swingsIntoBody": false,
+     "extendsAxis": "x",
+     "geometryExact": true,
+     "sharedPositionAccessor": false,
+     "status": "ok"
+    }
+   ],
+   "anchorNames": [
+    "door_single"
+   ],
+   "anchors": {},
+   "anchorSource": "declared",
+   "anchorOk": true,
+   "structure": {
+    "autoNamed": [],
+    "duplicateNames": [],
+    "orphanHandles": []
+   },
+   "refMm": {
+    "w": 676.0,
+    "h": 1310.5,
+    "d": 672.0
+   },
+   "deltaVsSourceMm": {
+    "w": 0,
+    "h": 0,
+    "d": 0
+   },
+   "toleranceMm": 5,
+   "lod": 0,
+   "sourceBytes": 3637480,
+   "compressionPct": 0.0
+  }
+ ]
+}

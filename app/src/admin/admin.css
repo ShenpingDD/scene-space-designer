@@ -1,0 +1,994 @@
+/**
+ * admin.css —— 维护端的样式（R6-1）
+ *
+ * 为什么单独一个文件、而不是在组件里写 <style scoped>：
+ *   维护端是**另一张脸**（前台是"干活的地方"，后台是"管东西的地方"），它的版式
+ *   （居中卡片、告警条、导航条）跟设计器几乎不重叠。放在一起会让两边都难读。
+ *
+ * 颜色一律用全局 token（见 style.css 的 :root）—— 维护端**不引入任何新颜色**：
+ * 一个新颜色就是一次"这两个界面不是一套东西"的暗示，而它们是一套。
+ */
+
+.adm {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+/* ---------------- 顶栏 ---------------- */
+.adm__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.adm__brand { display: flex; align-items: baseline; gap: 8px; }
+.adm__brand b { font-size: 16px; color: var(--brand); }
+.adm__sub { font-size: 12px; color: var(--ink-3); }
+.adm__spacer { flex: 1; }
+.adm__store {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.adm__btn {
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.adm__btn:hover { border-color: var(--brand); color: var(--brand); }
+.adm__btn--ghost { background: transparent; border-color: transparent; }
+
+/* ---------------- 认证未接的告知条 ---------------- */
+/* 常驻、显眼、不刺眼：它是"事实说明"，不是"错误"。用 warn 色是因为它确实有风险 */
+.adm__notice {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 12px 16px 0;
+  padding: 9px 14px;
+  border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--line));
+  border-left: 4px solid var(--warn);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--warn) 8%, var(--panel));
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.adm__notice b { color: var(--warn-ink); white-space: nowrap; }
+.adm__notice code { font-family: var(--mono); font-size: 12px; }
+
+/* ---------------- 导航 ---------------- */
+.adm__tabs { display: flex; gap: 6px; padding: 12px 16px 0; }
+.adm__tabs button {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.adm__tabs button:hover { background: var(--brand-soft); color: var(--brand); }
+.adm__tabs button[aria-current="page"] {
+  background: var(--panel);
+  border-color: var(--line);
+  border-bottom-color: var(--brand);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+/* ---------------- 内容区 ---------------- */
+.adm__body { flex: 1; padding: 0 16px 24px; }
+.adm__panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 0 var(--radius) var(--radius) var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+}
+.adm__panel h2 { margin: 0 0 6px; font-size: 15px; }
+.adm__muted { color: var(--ink-3); font-size: 13px; margin: 6px 0; }
+.adm__mono { font-family: var(--mono); font-size: 12px; }
+
+/* ---------------- 居中的状态卡（核对中 / 不通 / 无权）---------------- */
+.adm__center { flex: 1; display: grid; place-items: center; padding: 32px 16px; }
+.adm__card {
+  max-width: 560px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px 24px;
+}
+.adm__card h2 { margin: 0 0 10px; font-size: 17px; }
+.adm__card p { margin: 8px 0; color: var(--ink-2); font-size: 13px; }
+.adm__card code {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 1px 5px;
+  background: var(--line-2);
+  border-radius: 4px;
+}
+.adm__card--bad { border-top: 4px solid var(--bad); }
+.adm__card--bad h2 { color: var(--bad-ink); }
+.adm__card--warn { border-top: 4px solid var(--warn); }
+.adm__card--warn h2 { color: var(--warn-ink); }
+.adm__card button { margin-top: 10px; }
+
+
+/* ================= 产品列表（R6-1 Step3） =================
+   版式刻意跟前台型号卡保持一致（缩略图 + 名称 + 型号 + 尺寸），
+   差别只在：这里多一排**角标**，而且角标是主角（列表的价值是分诊）。 */
+
+.pl { padding: 0; }
+.pl__sum {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 2px 12px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.pl__total b { font-size: 16px; color: var(--ink); }
+/* 单位一律写出来：「必须修 0 款」—— 数字后面的"款"不是装饰，它防的是把角标数当产品数 */
+.pl__k { padding: 2px 9px; border-radius: 999px; font-size: 12px; }
+.pl__k--bad { background: color-mix(in srgb, var(--bad) 12%, var(--panel)); color: var(--bad-ink); }
+.pl__k--warn { background: color-mix(in srgb, var(--warn) 14%, var(--panel)); color: var(--warn-ink); }
+.pl__k--off { background: var(--line-2); color: var(--ink-3); }
+.pl__spacer { flex: 1; }
+.pl__src { font-size: 12px; color: var(--ink-3); }
+
+.pl__filter { display: flex; align-items: center; gap: 6px; padding: 0 2px 10px; flex-wrap: wrap; }
+.pl__filter button {
+  font: inherit; font-size: 13px; padding: 5px 12px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--panel); color: var(--ink-2); cursor: pointer;
+}
+.pl__filter button:hover { border-color: var(--brand); color: var(--brand); }
+.pl__filter button[aria-pressed="true"] {
+  background: var(--brand-soft); border-color: var(--brand); color: var(--brand); font-weight: 600;
+}
+/* ⚠️ 这里原来有个 opacity:.85：它把父级的 --brand 压成 4.38（刚好不达标）——
+   装饰性的透明度最容易悄悄压掉对比度，去掉。 */
+.pl__n { font-family: var(--mono); font-size: 11px; }
+/* 「显示 N / 共 M 款」常驻：筛选永远不许静默（否则用户以为产品就这么几个） */
+.pl__shown { font-size: 12px; color: var(--ink-3); font-family: var(--mono); }
+
+.pl__msg { padding: 14px 2px; color: var(--ink-3); font-size: 13px; }
+.pl__msg--bad { color: var(--bad-ink); }
+
+.pl__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 12px;
+}
+
+.pcard {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+/* 停用 / 未就绪的卡片：**降存在感，但不许降可读性**。
+   "已停用"本身就是一句要被读到的信息（它决定"这款还能不能摆"）——
+   原来整张卡 `opacity: .62`，里面每一行文字都被压到 AA 以下。这个坑藏了一整轮：
+   对比度闸一直在跑，只是**没有一个停用/未就绪的卡出现在被扫的那几页里**。
+   现在只让缩略图与边框降调，文字一律保持原色；"已停用"另有角标用文字说清楚。 */
+.pcard.is-off { border-style: dashed; background: var(--bg); }
+.pcard.is-off .pcard__thumb { opacity: .55; }
+.pcard__thumb {
+  flex: 0 0 84px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--c) 12%, var(--panel));
+  border: 1px solid var(--line-2);
+  overflow: hidden;
+}
+.pcard__thumb img { max-width: 100%; max-height: 100%; display: block; }
+.pcard__ph {
+  width: 34px; height: 34px; border-radius: 6px;
+  background: color-mix(in srgb, var(--c) 45%, var(--panel));
+}
+
+.pcard__main { flex: 1; min-width: 0; }
+.pcard__top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.pcard__top b { font-size: 14px; color: var(--ink); }
+.pcard__model { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.pcard__meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; align-items: center; }
+.pcard__dim { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.pcard__dim--none { color: var(--warn-ink); }
+.pcard__tag { font-size: 11px; color: var(--ink-3); background: var(--line-2); padding: 1px 7px; border-radius: 4px; }
+.pcard__tag--id { font-family: var(--mono); }
+
+.pcard__badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid transparent; cursor: help;
+}
+.badge--bad { background: color-mix(in srgb, var(--bad) 14%, var(--panel)); color: var(--bad-ink); border-color: color-mix(in srgb, var(--bad) 40%, var(--panel)); }
+.badge--warn { background: color-mix(in srgb, var(--warn) 16%, var(--panel)); color: var(--warn-ink); border-color: color-mix(in srgb, var(--warn) 40%, var(--panel)); }
+.badge--off { background: var(--line-2); color: var(--ink-3); }
+.badge--none { background: color-mix(in srgb, var(--ok) 12%, var(--panel)); color: var(--ok-ink); cursor: default; }
+
+
+/* ================= 系统状态（R6-1 Step4） =================
+   这一页是拿来下判断的，所以：数字大、口径写在数字下面、缺层要点名、迁移要能看懂。 */
+
+.sys { padding: 4px 0 0; }
+.sys__h {
+  display: flex; align-items: center; gap: 10px;
+  margin: 18px 0 10px; font-size: 14px; color: var(--ink);
+  padding-bottom: 6px; border-bottom: 1px solid var(--line-2);
+}
+.sys__h:first-child { margin-top: 4px; }
+.sys__pill { font-size: 11px; padding: 2px 9px; border-radius: 999px; font-weight: 400; }
+.sys__pill.is-ok { background: color-mix(in srgb, var(--ok) 12%, var(--panel)); color: var(--ok-ink); }
+.sys__pill.is-warn { background: color-mix(in srgb, var(--warn) 16%, var(--panel)); color: var(--warn-ink); }
+
+.sys__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.tile {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 12px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.tile__k { font-size: 12px; color: var(--ink-2); }
+/* 数字用等宽：一列数字对齐了才看得出量级，比例字体做不到这件事 */
+.tile__v { font-family: var(--mono); font-size: 21px; color: var(--ink); line-height: 1.2; }
+.tile__h { font-size: 11px; color: var(--ink-3); }
+
+.sys__row {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  font-size: 13px; color: var(--ink-2); padding: 4px 2px;
+}
+.sys__row b { font-family: var(--mono); font-size: 15px; color: var(--ink); }
+.sys__sep { color: var(--line); }
+.sys__note { font-size: 12px; color: var(--ink-3); }
+
+.sys__list { list-style: none; margin: 6px 0 0; padding: 0; }
+.sys__list li {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  padding: 6px 10px; font-size: 13px;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 8px;
+  margin-bottom: 6px;
+}
+.sys__list--mig li { padding: 5px 10px; font-size: 12px; }
+.sys__ver { min-width: 46px; color: var(--brand); }
+.sys__dim { font-size: 12px; color: var(--ink-2); }
+.sys__bad { font-size: 12px; color: var(--warn-ink); }
+.sys__ok { margin-left: auto; font-size: 11px; color: var(--ok-ink); }
+.sys__ok.is-bad { color: var(--bad-ink); }
+.sys__tag { font-size: 11px; padding: 1px 7px; border-radius: 4px; background: var(--brand-soft); color: var(--brand); cursor: help; }
+
+/* 门型未确认 / 更新人 —— 列表上要能直接看见，不必点进去。
+   琥珀色：它是"该看一眼"，不是"坏了"（坏的那档用红）。 */
+.pcard__tag--warn {
+  color: #8a4b00;
+  background: #fff4e5;
+  border-color: #f0cfa5;
+}
+.pcard__tag--by {
+  color: #40566b;
+  background: #f2f6f9;
+  border-color: #d8e3ec;
+}
+
+/* ── 新增产品向导（R6-2 Step 3）────────────────────────────────────────
+   颜色一律走变量（这是本项目刚体检收口过的规矩）：新增危险态文字/浅底时
+   用 --bad-ink / --bad-soft，不要再往这里写死危险态的色值。
+   （注释里也不写那两个字面值 —— 写了会被 tools/verify 的硬编码扫描数进去，
+   数字凭空变差，看起来像退步。） */
+
+/* 列表上的「＋ 新增产品」：比旁边的「重取列表」更显眼 —— 新增是主动作 */
+.pl__add { border-color: var(--brand); color: var(--brand); }
+
+.wz__steps { display: flex; gap: 6px; padding: 4px 0 12px; }
+.wz__step {
+  padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--panel); color: var(--ink-2); font: inherit; font-size: 12px; cursor: pointer;
+}
+.wz__step:disabled { opacity: .5; cursor: not-allowed; }
+.wz__step.is-done { border-color: var(--brand); color: var(--brand); }
+.wz__step.is-on { background: var(--brand); border-color: var(--brand); color: var(--panel); }
+
+.wz__panel { padding: 0 0 12px; }
+.wz__panel h2 { margin: 0 0 6px; font-size: 16px; }
+.wz__panel h3 { margin: 14px 0 6px; font-size: 13px; }
+
+.wz__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; margin: 10px 0; }
+.wz__f { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-2); }
+.wz__f--wide { grid-column: 1 / -1; }
+.wz__f input, .wz__f textarea {
+  padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px;
+  background: var(--panel); color: var(--ink); font: inherit; font-size: 13px;
+}
+.wz__req { font-style: normal; font-size: 11px; color: var(--bad-ink); }
+.wz__field-error { font-style: normal; font-size: 11px; line-height: 1.6; color: var(--bad-ink); }
+
+.wz__issues { margin: 10px 0; padding: 8px 10px; border-radius: 7px; font-size: 12px; line-height: 1.7; }
+.wz__issues ul { margin: 4px 0 0; padding-left: 18px; }
+.wz__issues--bad { background: var(--bad-soft); color: var(--bad-ink); }
+.wz__issues--warn { background: color-mix(in srgb, var(--warn) 12%, var(--panel)); color: var(--warn-ink); }
+
+.wz__drop {
+  display: grid; place-items: center; min-height: 92px; margin: 10px 0;
+  border: 2px dashed var(--line); border-radius: var(--radius); background: var(--bg);
+}
+.wz__drop.is-busy { border-color: var(--brand); }
+.wz__drop input[type="file"] { max-width: 100%; }
+.wz__drop-hint { color: var(--ink-3); font-size: 13px; }
+.wz__drop-file { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+
+.wz__picks { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+.wz__picks th, .wz__picks td { padding: 6px 8px; border-bottom: 1px solid var(--line-2); text-align: left; vertical-align: top; }
+.wz__picks thead th { color: var(--ink-3); font-weight: 500; }
+.wz__picks tbody th { white-space: nowrap; color: var(--ink-2); }
+.wz__img { width: 64px; height: 64px; object-fit: contain; background: var(--bg); border-radius: 6px; }
+.wz__num { width: 76px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.wz__conf { white-space: nowrap; font-family: var(--mono); }
+.wz__ev { color: var(--ink-3); line-height: 1.7; }
+.wz__note { margin-top: 3px; color: var(--warn-ink); }
+
+.wz__tag { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11px; white-space: nowrap; }
+.wz__tag--auto { background: var(--brand-soft); color: var(--brand); }
+.wz__tag--human { background: color-mix(in srgb, var(--warn) 14%, var(--panel)); color: var(--warn-ink); }
+.wz__tag--none { background: var(--line-2); color: var(--ink-3); }
+.wz__tag--run { background: var(--brand-soft); color: var(--brand); }
+.wz__tag--ok { background: color-mix(in srgb, var(--ok) 14%, var(--panel)); color: var(--ok-ink); }
+.wz__mini { margin-left: 4px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); font: inherit; font-size: 11px; cursor: pointer; }
+
+.wz__checks ul { margin: 4px 0; padding: 0; list-style: none; }
+.wz__checks li { padding: 5px 8px; border-left: 3px solid var(--line); margin-bottom: 4px; font-size: 12px; }
+.wz__checks li.is-bad { border-left-color: var(--bad); }
+.wz__checks li.is-warn { border-left-color: var(--warn); }
+.wz__checks li.is-ok { border-left-color: var(--ok); }
+.wz__lv { display: inline-block; min-width: 34px; color: var(--ink-3); }
+
+.wz__sum { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13px; }
+.wz__sum th { width: 110px; padding: 5px 8px; color: var(--ink-3); font-weight: 500; text-align: left; }
+.wz__sum td { padding: 5px 8px; border-bottom: 1px solid var(--line-2); }
+.wz__done ul { margin: 6px 0; padding-left: 18px; font-size: 13px; line-height: 1.9; }
+
+.wz__foot { display: flex; align-items: center; gap: 8px; padding: 12px 0 0; border-top: 1px solid var(--line-2); }
+
+
+/* ================= 场景方案库（R6-3 3d） =================
+   方案是「一份图纸」，所以卡片比产品卡大一号、封面在上（设计决策记录的大卡片）。
+   版式与筛选条复用产品列表那套 `.pl__*` 原语 —— 两处列表长一样，
+   用户不用重新学一遍「汇总在哪、筛选在哪、显示几条写在哪」。
+   色值一律走变量（本项目体检收口过的规矩）。 */
+
+.sl { padding: 0; }
+.sl__bar { gap: 8px; }
+.sl__q {
+  font: inherit; font-size: 13px;
+  padding: 5px 12px; width: 230px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--panel); color: var(--ink);
+}
+.sl__q:focus { outline: 2px solid var(--brand-soft); border-color: var(--brand); }
+.sl__lab { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-3); }
+.sl__sel {
+  font: inherit; font-size: 13px;
+  padding: 4px 8px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); color: var(--ink-2);
+}
+/* 「显示 N / 共 M 份（条件：…）」常驻 —— 筛选绝不静默 */
+.sl__summary { margin: 0 0 10px; padding: 0 2px; font-size: 12px; color: var(--ink-3); }
+
+.sl__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 12px;
+}
+
+.scard {
+  display: flex; flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.scard.is-deleted { opacity: .62; }   /* 已软删：还在、但不参与 —— 与产品停用同一态度 */
+.scard__cover {
+  display: grid; place-items: center;
+  aspect-ratio: 16 / 9;
+  background: var(--line-2);
+  border-bottom: 1px dashed var(--line);
+}
+/* 占位不假装是图：写明「无封面」，而不是画一块让人以为是缩略图的东西 */
+.scard__img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+
+.scard__ph { font-size: 12px; color: var(--ink-3); }
+.scard__body { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; }
+.scard__top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.scard__top b { font-size: 14px; color: var(--ink); }
+
+.sl__open { border-color: var(--brand); color: var(--brand); align-self: center; }
+
+.sl__note {
+  margin: 14px 2px 0; padding: 9px 12px;
+  font-size: 12px; color: var(--ink-3);
+  background: var(--line-2); border-radius: 8px;
+}
+.sl__note code { font-family: var(--mono); font-size: 11px; }
+
+/* ---------------- R6-3 3e：回收站 / 三个写动作 / 版本历史 ----------------
+   颜色仍然只用全局 token：一个新颜色就是一次"这两个界面不是一套东西"的暗示。
+   危险动作（删除）用 --danger，但**只用边框与文字**，不用红底填充 ——
+   回收站是软删，它不是"毁掉"，红底会夸大它。 */
+
+.sl__view { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.sl__view button {
+  border: 0; background: var(--panel); color: var(--ink-2);
+  padding: 3px 12px; font-size: 12px; cursor: pointer;
+}
+.sl__view button + button { border-left: 1px solid var(--line); }
+.sl__view button[aria-pressed="true"] { background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+
+/* 回收站那一句：与末尾的边界说明同款，但它贴在顶上（先看它，再看表） */
+.sl__note--view { margin: 0 2px 10px; }
+
+/* 上一次动作的结果。成功与失败用同一套板式、只换色 —— 成功的消息也该看得见 */
+.sl__notice {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin: 0 0 10px; padding: 9px 12px;
+  font-size: 12px; border-radius: 8px; border: 1px solid var(--line);
+}
+.sl__notice--ok { color: var(--ink-2); background: var(--line-2); border-color: var(--brand-soft); }
+.sl__notice--bad { color: var(--bad-ink); background: var(--bad-soft); border-color: var(--bad); }
+
+.sl__act { font-size: 12px; padding: 3px 10px; }
+.sl__act--danger { border-color: var(--danger); color: var(--danger); }
+.sl__act--danger:hover:not(:disabled) { background: var(--bad-soft); }
+
+/* 二次确认条：贴在动作下面、同一张卡里 —— 弹窗会遮住"他在确认哪一份"这个上下文 */
+.sl__confirm {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 10px; border-radius: 8px;
+  font-size: 12px; color: var(--ink-2);
+  background: var(--bad-soft); border: 1px solid var(--bad);
+}
+
+/* 版本历史。每一行都要能被人认出来（尺寸/台数/型号），否则回滚是掷骰子 */
+.sl__revs { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 2px; }
+.sl__revs-note { margin: 0 0 6px; font-size: 12px; color: var(--ink-3); }
+.sl__revs-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.sl__rev {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 4px 8px; border-radius: 6px; font-size: 12px;
+  background: var(--line-2);
+}
+.sl__rev.is-current { outline: 1px solid var(--brand-soft); }
+.sl__rev-no { font-weight: 600; color: var(--ink-2); font-family: var(--mono); font-size: 11px; }
+.sl__rev-dim { color: var(--ink-2); font-family: var(--mono); font-size: 11px; }
+.sl__rev-time { color: var(--ink-3); font-size: 11px; }
+/* 备注最长（用户写的话），要能截断 —— 但 title 里必须留着全文 */
+.sl__rev-note {
+  color: var(--ink-3); font-size: 11px;
+  max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   R6-4 B4b：参数自动跟新的提示条 + 维护端「参数配置」页
+   颜色一律用 style.css 里的变量（--brand / --warn / --bad-soft …），不新造颜色。
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* 提示条：固定在顶部中间 —— 它不属于任何一栏，硬塞进布局会挤坏别的东西 */
+.pnotice {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(760px, calc(100vw - 32px));
+  padding: 8px 12px;
+  border: 1px solid var(--brand);
+  border-radius: var(--radius);
+  background: var(--brand-soft);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+}
+/* 没装上那一版：红一点，而且不自动消失（它是个待解释的现象） */
+.pnotice--failed { background: var(--bad-soft); border-color: var(--bad); color: var(--bad-ink); }
+.pnotice__x {
+  flex: none;
+  padding: 2px 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.pp { padding: 4px 2px 24px; }
+.pp__center { padding: 40px 8px; text-align: center; }
+.pp__muted { color: var(--ink-3); }
+.pp__mono { font-family: var(--mono); font-size: 12px; }
+.pp__meta { margin: 0 0 2px; color: var(--ink-2); font-size: 13px; }
+.pp__sep { color: var(--ink-3); }   /* 原来是 var(--line)：拿分隔线色当文字色，实测 1.20 */
+.pp__live { margin: 0 0 12px; color: var(--ink-3); font-size: 12px; }
+
+.pp__gate {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--bad-soft);
+  color: var(--bad-ink);
+  font-size: 13px;
+}
+
+/* 操作条粘在顶部：34 项要滚很久，滚动时"改了 N 项 / 发布"不能飘走 */
+.pp__bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.pp__count { font-size: 13px; color: var(--ink-3); }
+.pp__count.is-dirty { color: var(--brand); }
+.pp__note {
+  flex: 1 1 260px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.pp__btn {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 13px;
+}
+.pp__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.pp__btn--go { border-color: var(--brand); background: var(--brand); color: #fff; }
+.pp__btn--ghost { color: var(--ink-2); }
+
+.pp__problems,
+.pp__result { margin: 0 0 12px; padding: 10px 12px; border-radius: var(--radius); font-size: 13px; }
+.pp__problems { background: var(--brand-soft); }
+.pp__problems ul,
+.pp__result ul { margin: 6px 0 0; padding-left: 20px; }
+.pp__result--ok { background: #eaf7f0; color: #0f6b47; }
+.pp__result--bad { background: var(--bad-soft); color: var(--bad-ink); }
+
+.pp__group { margin: 0 0 18px; }
+.pp__gtitle { margin: 0 0 8px; font-size: 14px; }
+.pp__ghelp { margin-left: 8px; color: var(--ink-3); font-size: 12px; font-weight: 400; }
+.pp__row {
+  display: grid;
+  grid-template-columns: 190px 120px 165px 92px auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 1px;
+  border-bottom: 1px solid var(--line-2);
+}
+.pp__row.is-dirty { background: var(--brand-soft); }
+.pp__row.is-locked { color: var(--ink-3); }
+.pp__label { font-size: 13px; }
+.pp__unit { margin-left: 4px; color: var(--ink-3); font-size: 12px; }
+.pp__input {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.pp__input:disabled { background: var(--bg); color: var(--ink-3); }
+.pp__range,
+.pp__def { color: var(--ink-3); font-size: 12px; }
+.pp__reset {
+  justify-self: start;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  cursor: pointer;
+  font-size: 12px;
+}
+.pp__help { grid-column: 1 / -1; color: var(--ink-3); font-size: 12px; }
+.pp__lock { grid-column: 3 / -1; color: var(--bad-ink); font-size: 12px; }
+.pp__foot { margin: 8px 0 0; color: var(--ink-3); font-size: 12px; line-height: 1.7; }
+
+
+/* ── 参数审计（R6-4 B4c）─────────────────────────────────────────────────
+   与参数页/方案库同一套变量，不自己定义颜色。 */
+.ap { padding: 4px 2px 40px; }
+.ap__head { margin-bottom: 14px; }
+.ap__title { margin: 0 0 6px; font-size: 18px; color: var(--ink); }
+.ap__why { margin: 0; font-size: 12px; line-height: 1.65; color: var(--ink-3); }
+.ap__trouble { margin: 8px 0 0; padding: 8px 10px; border-radius: var(--radius); background: var(--bad-soft); color: var(--bad-ink); font-size: 12px; }
+.ap__loading { margin: 8px 0 0; font-size: 12px; color: var(--ink-3); }
+.ap__filter { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 0 0 10px; }
+.ap__f { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--ink-3); }
+.ap__f--wide { min-width: 240px; }
+.ap__input { padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); color: var(--ink); font-size: 12px; }
+.ap__input:focus { outline: none; border-color: var(--brand); }
+.ap__btn { padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); color: var(--ink); font-size: 12px; cursor: pointer; }
+.ap__btn--ghost { color: var(--ink-2); }
+.ap__btn[disabled] { opacity: .45; cursor: not-allowed; }
+.ap__cond { margin: 0 0 12px; padding: 0 2px; font-size: 12px; color: var(--ink-3); }
+.ap__cond-hint { color: var(--warn-ink); }
+.ap__table { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.ap__thead, .ap__row { display: grid; grid-template-columns: 150px 1.5fr 190px 130px 1fr; gap: 10px; align-items: center; width: 100%; text-align: left; }
+.ap__thead { padding: 8px 12px; background: var(--bg); border-bottom: 1px solid var(--line); font-size: 11px; color: var(--ink-3); }
+.ap__row { padding: 9px 12px; border: 0; border-bottom: 1px solid var(--line-2); background: var(--panel); color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; }
+.ap__row:last-child { border-bottom: 0; }
+.ap__row:hover, .ap__row.is-open { background: var(--brand-soft); }
+.ap__c-time { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.ap__c-val, .ap__mono { font-family: var(--mono); }
+.ap__c-note { color: var(--ink-2); }
+.ap__c-note.is-empty { color: var(--ink-3); font-style: italic; }
+.ap__empty { margin: 12px 0; padding: 11px 13px; border: 1px dashed var(--line); border-radius: var(--radius); font-size: 12px; color: var(--ink-2); }
+.ap__pager { display: flex; align-items: center; gap: 12px; margin: 12px 0 0; }
+.ap__pages { font-size: 12px; color: var(--ink-3); }
+.ap__detail { margin: 16px 0 0; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); }
+.ap__dhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.ap__dtitle { margin: 0; font-size: 14px; color: var(--ink); }
+.ap__dl { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; margin: 0 0 12px; font-size: 12px; }
+.ap__dl dt { color: var(--ink-3); }
+.ap__dl dd { margin: 0; color: var(--ink); }
+.ap__snapnote { margin: 0 0 8px; font-size: 12px; color: var(--ink-3); line-height: 1.6; }
+.ap__mismatch { margin: 0 0 8px; padding: 8px 10px; border-radius: var(--radius); background: var(--bad-soft); color: var(--bad-ink); font-size: 12px; }
+.ap__snap { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.ap__snap li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 10px; border-bottom: 1px solid var(--line-2); font-size: 12px; }
+.ap__snap li:last-child { border-bottom: 0; }
+.ap__snap li.is-changed { background: var(--brand-soft); font-weight: 600; }
+.ap__s-label { color: var(--ink-2); }
+.ap__s-value { color: var(--ink); }
+
+
+/* ── 四档能力（R6-4 B4e）：进得来 ≠ 什么都能做 ─────────────────────────── */
+.adm__caps { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px; padding: 8px 12px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); font-size: 12px; }
+.adm__caps-who { color: var(--ink); font-weight: 600; }
+.adm__caps-can { color: var(--ink-2); }
+.adm__caps-cannot { color: var(--warn-ink); }
+.adm__caps-unknown { flex-basis: 100%; color: var(--bad-ink); }
+
+/* 卡片上的「参数与结论」那一段（R6-4 B4d）已于 2026-10-07 整块删除：
+   用户拍板「这段没用」。跟着一起下的还有 `admin/verdict.js`（十个导出只服务这一块）、
+   它的测试、以及 `api.js` 里的 `paramsSnapshot` / `schemeRecheck` 两个客户端方法。
+   服务端那两个只读接口**保留**（删接口波及面大得多，而且它们只算不写）——
+   见 `SchemeController` 里对应的说明。 */
+
+/* ── 产品卡上的「加一个变体」（B5）────────────────────────────── */
+.pcard__acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.adm__btn--tiny { padding: 3px 8px; font-size: 12px; }
+
+/* ── 停用 / 启用的就地确认（req-1）───────────────────────────────
+   为什么就地而不是弹窗：这一步要在**看清是哪一款**的前提下做，
+   弹窗把列表盖住恰好让人看不清；而它需要的只是一次显式确认 + 后果说明。
+   颜色一律走变量（--warn 只在**左边框**上，正文用 --ink-2/--ink-3：亮橙当文字不达 AA）。 */
+.pcard__confirm {
+  margin-top: 8px; padding: 8px 10px;
+  border: 1px solid var(--line); border-left: 3px solid var(--warn);
+  border-radius: var(--radius); background: var(--bg);
+}
+.pcard__confirm-t { margin: 0 0 4px; font-size: 13px; color: var(--ink); }
+.pcard__confirm-l { margin: 0; padding-left: 18px; font-size: 12px; color: var(--ink-2); }
+.pcard__confirm-l li { margin: 2px 0; }
+.pcard__confirm-note { display: block; margin: 6px 0; font-size: 12px; color: var(--ink-3); }
+.adm__in {
+  margin-left: 6px; padding: 3px 6px; max-width: 220px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel); color: var(--ink); font-size: 12px;
+}
+.adm__in:focus { outline: none; border-color: var(--brand); }
+.pcard__confirm-acts { display: flex; gap: 8px; }
+.adm__btn--primary { border-color: var(--brand); color: var(--brand); font-weight: 500; }
+.pcard__err { margin: 6px 0 0; font-size: 12px; color: var(--bad-ink); }
+.pl__flash { margin: 6px 0; font-size: 12px; color: var(--ok-ink); }
+.pcard__tag--variants span.is-bad { color: #b91c1c; }
+
+/* ---------- 用户（U1） ---------- */
+
+.us { padding: 0 16px 16px; }
+.us__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.us__row {
+  padding: 12px 14px; background: var(--panel);
+  border: 1px solid var(--line-2); border-radius: var(--radius);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.us__head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.us__head b { font-size: 14px; margin-right: 2px; }
+.us__tag--off { background: var(--bad-soft); color: var(--bad-ink); }
+.us__edit { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.us__f { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-3); }
+.us__f input, .us__f select {
+  padding: 5px 8px; min-width: 150px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); color: var(--ink); font: inherit; font-size: 12px;
+}
+.us__f input:focus, .us__f select:focus { outline: none; border-color: var(--brand); }
+.us__meta { font-size: 12px; color: var(--ink-3); margin-left: auto; }
+.us__form {
+  margin: 12px 0; padding: 12px 14px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px;
+}
+.us__form b { font-size: 13px; color: var(--ink-2); align-self: center; }
+.us__err { flex-basis: 100%; margin: 0; font-size: 12px; color: var(--bad-ink); }
+.us__note { flex-basis: 100%; margin: 0; font-size: 12px; color: var(--ink-3); line-height: 1.7; }
+
+/* ── 产品 3D 标注看板（P0）────────────────────────────────────────────
+   三栏：热点列表 / 3D / 编辑；不改现有卡片与向导样式，只在 .hsb 内生效。 */
+.hsb {
+  display: flex;
+  flex-direction: column;
+  min-height: 520px;
+  height: min(650px, calc(100vh - 245px));
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.hsb__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line-2);
+  background: linear-gradient(180deg, #fbfdfe, #f3f8fa);
+}
+.hsb__back { flex: 0 0 auto; }
+.hsb__title { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.hsb__title b { font-size: 13px; }
+.hsb__title span { font-size: 11px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hsb__count { display: inline-flex; align-items: baseline; gap: 4px; font-size: 11px; color: var(--ink-3); white-space: nowrap; }
+.hsb__count b { font-family: var(--mono); font-size: 14px; color: var(--ink); }
+.hsb__bad { font-style: normal; color: var(--bad-ink); margin-left: 4px; }
+.hsb__phase { margin: 20px; padding: 12px; border-radius: 8px; background: var(--bg); font-size: 13px; color: var(--ink-2); }
+.hsb__phase--bad { background: var(--bad-soft); color: var(--bad-ink); }
+.hsb__body { display: grid; grid-template-columns: 212px minmax(0, 1fr) 318px; min-height: 0; flex: 1; }
+.hsb__list, .hsb__side { min-width: 0; overflow: auto; background: #fbfcfd; }
+.hsb__list { border-right: 1px solid var(--line-2); padding: 8px; }
+.hsb__side { border-left: 1px solid var(--line-2); padding: 10px; }
+.hsb__list-head, .hsb__side-head, .hsb__content-head {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 7px; font-size: 12px;
+}
+.hsb__list-head > span { color: var(--ink-3); font-size: 11px; margin-right: auto; }
+.hsb__list-head .adm__btn { margin-left: auto; }
+.hsb__row {
+  display: flex; flex-direction: column; gap: 3px; width: 100%;
+  margin: 0 0 5px; padding: 7px 8px; border: 1px solid transparent; border-radius: 7px;
+  background: transparent; color: var(--ink); text-align: left; cursor: pointer;
+}
+.hsb__row:hover { background: var(--brand-soft); }
+.hsb__row.is-on { border-color: var(--brand); background: var(--brand-soft); }
+.hsb__row.is-invalid { border-left: 3px solid var(--bad); }
+.hsb__row-top { display: flex; gap: 6px; align-items: baseline; min-width: 0; }
+.hsb__row-top b { font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+.hsb__row-top span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.hsb__row small { font-size: 10px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hsb__row-bad { color: var(--bad-ink) !important; white-space: normal !important; }
+.hsb__empty { margin: 12px 4px; font-size: 11px; line-height: 1.7; color: var(--ink-3); }
+
+/* 验收-2：看板只标热点；产品卖点/参数在第 1 步维护 */
+.hsb__hint-products {
+  margin: 0.5rem 0 0.7rem;
+  padding: 0.45rem 0.55rem;
+  border-left: 2px solid var(--adm-line);
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--adm-muted);
+}
+.hsb__hint-products b {
+  color: var(--adm-ink);
+}
+
+/* 动作库：产品级、key 是身份；列表与热点列表同一套行样式 */
+.hsb__actions { margin: 0 0 8px; padding: 6px 7px; border: 1px solid var(--adm-line); border-radius: 8px; background: var(--panel); }
+.hsb__actions > summary { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; }
+.hsb__actions > summary .adm__btn { margin-left: auto; }
+.hsb__row--action { padding: 6px 5px; }
+.hsb__row--action .hsb__row-top b { color: var(--brand-dark); }
+.hsb__sep { margin: 10px 0; border: 0; border-top: 1px solid var(--adm-line); }
+.hsb__f--inline { flex: 1 1 90px; margin: 4px 0; }
+.hsb__f--check > span:last-child { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.hsb__f--check input { width: auto; }
+.hsb__triple { display: flex; gap: 4px; }
+.hsb__triple input { min-width: 0; }
+
+.hsb__warn { margin: 6px 0; padding: 7px 8px; border-radius: 6px; font-size: 11px; line-height: 1.6; background: color-mix(in srgb, var(--warn) 13%, var(--panel)); color: var(--warn-ink); }
+.hsb__warn--bad { background: var(--bad-soft); color: var(--bad-ink); }
+.hsb__stage { display: flex; flex-direction: column; min-width: 0; background: #f2f6f9; }
+.hsb__canvas-wrap { position: relative; flex: 1; min-height: 330px; overflow: hidden; }
+.hsb__canvas { position: absolute; inset: 0; }
+.hsb__canvas canvas { display: block; width: 100%; height: 100%; }
+.hsb__markers { position: absolute; inset: 0; pointer-events: none; }
+.hsb__marker {
+  position: absolute; transform: translate(-50%, -50%); pointer-events: auto;
+  width: 28px; height: 28px; margin: 0; padding: 0; border: 2px solid #fff;
+  border-radius: 50%; background: var(--brand); color: #fff; cursor: grab;
+  box-shadow: 0 0 0 1px rgb(15 23 42 / 38%), 0 2px 8px rgb(15 23 42 / 28%);
+}
+.hsb__marker i { display: block; width: 8px; height: 8px; margin: auto; border-radius: 50%; background: #fff; }
+/* 浅色台上白环会“消失”：用深色外环 + 白色内环保证标记与背景的边界仍可读。 */
+.hsb__marker:hover, .hsb__marker.is-on { outline: 2px solid #0f172a; outline-offset: 1px; transform: translate(-50%, -50%) scale(1.08); }
+.hsb__marker.is-occluded { opacity: .45; }
+.hsb__marker.is-on { background: var(--warn); }
+.hsb__stage-foot { display: flex; gap: 8px; align-items: center; padding: 5px 9px; background: #eaf1f6; border-top: 1px solid #d6e2ea; color: #4a5b66; font-size: 10px; }
+.hsb__stage-foot .hsb__mono { margin-left: auto; color: #71838f; }
+.hsb__modelerr { position: absolute; inset: 16px; display: flex; flex-direction: column; justify-content: center; padding: 16px; border: 1px dashed #9fb3c0; border-radius: 8px; color: #3d4d58; background: rgb(255 255 255 / 88%); font-size: 12px; line-height: 1.7; }
+.hsb__modelerr b { color: #16212a; }
+.hsb__side-head { justify-content: space-between; }
+.hsb__f { display: flex; flex-direction: column; gap: 3px; margin: 7px 0; font-size: 11px; color: var(--ink-2); }
+.hsb__f > span { display: flex; align-items: center; justify-content: space-between; }
+.hsb__f em { font-style: normal; font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+.hsb__f em.is-bad { color: var(--bad-ink); }
+.hsb__f input, .hsb__f textarea, .hsb__f select {
+  width: 100%; box-sizing: border-box; padding: 5px 7px; border: 1px solid var(--line);
+  border-radius: 6px; background: var(--panel); color: var(--ink); font: inherit; font-size: 12px;
+}
+.hsb__f textarea { resize: vertical; line-height: 1.5; }
+.hsb__f small { font-size: 10px; color: var(--ink-3); overflow-wrap: anywhere; }
+.hsb__toolrow { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0; }
+.hsb__hint { margin: 4px 0 10px; font-size: 10px; color: var(--ink-3); line-height: 1.5; }
+.hsb__anchor-current { margin: 1px 0 6px; font-size: 11px; line-height: 1.5; color: var(--ink-2); }
+.hsb__anchor-current b { color: var(--brand-dark); }
+.hsb__anchor-raw { margin: 2px 0 8px; padding: 5px 7px; border-radius: 6px; background: var(--bg); font-size: 10px; color: var(--ink-3); }
+.hsb__anchor-raw summary { cursor: pointer; color: var(--ink-2); }
+.hsb__anchor-raw small { display: block; margin-top: 4px; overflow-wrap: anywhere; }
+.hsb__anchor-help { margin: 8px 0 4px; padding: 7px 8px; border-radius: 6px; background: var(--brand-soft); color: var(--ink-2); font-size: 10px; line-height: 1.65; }
+.hsb__anchor-help b { display: block; margin-bottom: 3px; color: var(--brand-dark); }
+.hsb__anchor-help ol { margin: 0; padding-left: 16px; }
+.hsb__anchor-help li { margin: 2px 0; }
+.hsb__door-warn { flex-basis: 100%; margin: 0; padding: 5px 8px; border-radius: 6px; background: var(--bad-soft); color: var(--bad-ink); font-size: 11px; line-height: 1.5; }
+.hsb__danger { color: var(--bad-ink); border-color: color-mix(in srgb, var(--bad) 35%, var(--line)); }
+.hsb__content { border-top: 1px solid var(--line-2); margin-top: 10px; padding-top: 8px; }
+.hsb__content summary { cursor: pointer; font-size: 12px; color: var(--brand-dark); }
+.hsb__intro { margin: 6px 0; font-size: 11px; line-height: 1.6; color: var(--ink-2); }
+.hsb__intro b { display: block; color: var(--ink-3); font-weight: 500; margin-bottom: 2px; }
+.hsb__content-head { margin-top: 8px; }
+.hsb__content-head b { font-size: 11px; font-weight: 500; color: var(--ink-2); margin-right: auto; }
+.hsb__sp { display: flex; gap: 4px; margin: 4px 0; }
+.hsb__sp input { min-width: 0; flex: 1; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px; font: inherit; font-size: 11px; }
+.hsb__param { display: grid; grid-template-columns: 1fr 1fr 54px 1fr 20px; gap: 3px; margin: 4px 0; }
+.hsb__param input { min-width: 0; padding: 4px 5px; border: 1px solid var(--line); border-radius: 5px; font: inherit; font-size: 10px; }
+.hsb__param .adm__btn { padding: 0 4px; }
+.hsb__side-empty { margin-top: 16px; }
+.hsb__foot { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line-2); background: #fbfcfd; }
+.hsb__save { margin: 0; font-size: 11px; line-height: 1.5; color: var(--ink-2); max-width: 60%; }
+.hsb__save.is-saved { color: var(--ok-ink); }
+.hsb__save.is-unpublished { color: var(--warn-ink); }
+.hsb__save.is-failed { color: var(--bad-ink); }
+.hsb__issues { flex-basis: 100%; margin: 0; padding: 4px 0 0 18px; color: var(--bad-ink); font-size: 11px; line-height: 1.6; }
+.hsb__mono { font-family: var(--mono); font-size: 10px; }
+@media (max-width: 1120px) {
+  .hsb__body { grid-template-columns: 190px minmax(0, 1fr) 282px; }
+}
+@media (max-width: 900px) {
+  .hsb { height: auto; max-height: none; }
+  .hsb__body { grid-template-columns: 1fr; }
+  .hsb__list { max-height: 180px; border-right: 0; border-bottom: 1px solid var(--line-2); }
+  .hsb__side { max-height: 360px; border-left: 0; border-top: 1px solid var(--line-2); }
+  .hsb__canvas-wrap { min-height: 300px; }
+  .hsb__save { max-width: 100%; }
+}
+
+/* 向导第 4 步：看板嵌在向导面板里时去掉多余内边距，只留一行步骤说明 */
+.wz__panel--board { padding-top: 0; }
+.wz__board-kicker {
+  display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px;
+  font-size: 12px; color: var(--ink-2);
+}
+.wz__board-kicker span { font-size: 11px; color: var(--ink-3); }
+
+/* 结果页：继续标注 / 回列表并排；主按钮是可选下一步，不许压过“已入库”的结论 */
+.wz__done-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+/* 向导内嵌看板：上方还有步骤条与向导外框，不能按独立页面的 650px 高，否则 900 高视口要滚动 */
+.wz__panel--board .hsb { height: min(650px, calc(100vh - 325px)); min-height: 430px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   验收-2：产品模型库标题 + 编辑页（ProductEdit）
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* 产品库标题：页签名与页面标题都叫「产品模型库」，不要把两处写成两个说法 */
+.pl__head { padding: 0 2px 12px; }
+.pl__title { margin: 0; font-size: 20px; line-height: 1.3; color: var(--ink); }
+.pl__lead { margin: 4px 0 0; max-width: 760px; color: var(--ink-3); font-size: 12px; line-height: 1.7; }
+
+/* 删除确认与状态确认共用卡片内确认，但删除用危险色；文案仍要完整 */
+.pcard__confirm--danger { border-left: 3px solid var(--bad); background: var(--bad-soft); }
+.adm__btn--danger { color: var(--bad-ink); border-color: color-mix(in srgb, var(--bad) 50%, var(--line)); }
+
+/* 编辑页：只在本页根 .pe 下生效，不碰产品库卡片与其它面板 */
+.pe { padding: 0; }
+.pe__head {
+  display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+  padding: 0 0 12px; border-bottom: 1px solid var(--line-2);
+}
+.pe__title { margin: 0; font-size: 20px; line-height: 1.3; }
+.pe__sub { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin: 5px 0 0; color: var(--ink-3); font-size: 12px; }
+.pe__sub b { color: var(--ink); font-size: 13px; }
+.pe__mono { font-family: var(--mono); }
+.pe__tag { padding: 1px 7px; border-radius: 999px; background: var(--line-2); color: var(--ink-2); }
+.pe__form { padding-top: 4px; }
+.pe__panel { padding: 14px 0; border-bottom: 1px solid var(--line-2); }
+.pe__panel h2 { margin: 0 0 6px; font-size: 15px; }
+.pe__grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px; margin: 10px 0;
+}
+.pe__f { display: flex; flex-direction: column; gap: 4px; min-width: 0; color: var(--ink-2); font-size: 12px; }
+.pe__f--wide { grid-column: 1 / -1; }
+.pe__f input, .pe__f select, .pe__f textarea {
+  width: 100%; box-sizing: border-box; padding: 5px 8px;
+  border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--ink); font: inherit; font-size: 13px;
+}
+.pe__f textarea { resize: vertical; }
+.pe__ro { background: var(--bg) !important; color: var(--ink-3) !important; }
+.pe__hint { color: var(--ink-3); font-size: 11px; line-height: 1.6; }
+.pe__dims { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pe__dims input { width: 8em; }
+.pe__check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink); }
+.pe__check input { width: auto; }
+.pe__facts { margin-top: 4px; }
+.pe__thumb-row { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+.pe__thumb {
+  display: flex; align-items: center; justify-content: center;
+  width: 132px; height: 132px; flex: 0 0 auto;
+  border: 1px dashed var(--line); border-radius: 10px;
+  background: color-mix(in srgb, var(--c) 10%, var(--panel));
+  overflow: hidden;
+}
+.pe__thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.pe__thumb-ph { color: var(--ink-3); font-size: 12px; }
+.pe__thumb-acts { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; min-width: 0; }
+.pe__file { display: none; }
+.pe__err { color: var(--bad-ink); font-size: 12px; line-height: 1.6; }
+.pe__variants { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; }
+.pe__variants li {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline;
+  padding: 5px 0; border-bottom: 1px solid var(--line-2);
+}
+.pe__foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 14px 0 0; }
+.pe__ok { color: var(--ok-ink); font-size: 12px; }
+.is-disabled { opacity: .55; pointer-events: none; }
+
+@media (max-width: 900px) {
+  .pe__grid { grid-template-columns: 1fr; }
+  .pe__head { align-items: flex-start; }
+}

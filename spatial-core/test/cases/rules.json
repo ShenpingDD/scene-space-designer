@@ -1,0 +1,2599 @@
+{
+  "version": 11,
+  "note": "语言中立用例表：输入 -> 期望结论。内核（JS）与后端（Java）必须逐条通过同一张表——这是 设计决策记录架构原则 P2「服务端是唯一裁判」的落地方式。用例基准来自 设计决策记录的逐条核验与 设计决策记录的 A/B 实测，不是凭空写的期望值。 v2：新增规则 7「开门净空」（接缝 A 决策 A3，见 设计决策记录）—— catalog 里的 doors 是实测门几何（tools/models/verify-models.py → app/src/data/doors.measured.js），扫掠步长 1°，Java 侧需同一口径。 v3（2026-09-30）【跑真目录】：① 后端 /api/health/kernel 改用 CatalogSource.current()（与界面、与保存路径同一份目录），不再拿这张表内嵌的 catalog 当裁判——本表的 catalog 从此只是**无数据库时的退路**；② demo-freezer-chest 的 w/d/h 抄错了（旧 735×647×1470 → 真 1320×656×800），已改；③ 补 demo-freezer-upright 两条用例（真目录第 4 款此前零覆盖），并新增「真目录里每一款都被至少一条用例用过」契约（JS 侧 cases.test.js / Java 侧 CaseRunner.coverage）。 v7（2026-10-09）【W1 门洞】：① 墙的记录形状换代 —— 夹具里的 `walls` 从扁平数组 `[x1,z1,x2,z2]` 改成对象 `{a:[x,z], b:[x,z], openings:[…]}`（见 设计决策记录）；② `scheme-roundtrip` 的 `format` 期望改成新标识 `scene-space-designer-openings`，并新增 `openingCount` 读数（**门洞在导出/导入/分享链上不许静默消失**）；③ `room-resize` 新增 `openingsKept` / `openingsDropped` 读数；④ 新增 5 条门洞用例：靠墙能过 / 门框旁仍挡（成对）/ 往返带门洞 / 改尺寸门洞随墙走 / 改尺寸放不下如实报删。 v8（2026-10-09）【M1 房间名】：`roomLabels` 进方案（键 = 房间的几何稳定 id，值 = 名字），新增 `scheme-roundtrip-room-labels`（**字段白名单漏了它，名字就会在保存/分享/交付链上无警告消失**）。v10（2026-10-16）【W2 窗】：① 洞口多了两种写法 —— 门 `{at,w,h}`（与上一代逐字相同）、窗 `{at,w,h,kind,sill}`；**`kind` 只在窗上写**（门省略），于是所有含门洞的方案导出字节逐字不变；② 格式标识换代 `scene-space-designer-windows`（旧标识留只读历史），理由见 设计决策记录；③ 新增 4 条：`collision-window-blocks` / `collision-door-mirror-passes`（⭐ 成对：同一面墙、同一点位、只差窗那两个字段 —— 窗**不能走人**）、`scheme-roundtrip-window`（`kind`/`sill` 在保存/分享/交付链上不许静默消失，也不许被当成门）、`room-resize-window-kept`（改房间尺寸**不许把窗降级成落地洞**；新读数 `windowCount` 钉这一条）。 v9（2026-10-10）【陈旧名字】：新增 `scheme-roundtrip-stale-room-label` —— 暂时对不上房间的名字不许在导出时被静默丢掉，而且这条规则**不许依赖面遍历**（Java 侧没有房间算法，规则一依赖房间，两边导出的字节就会分叉）。 v11（2026-10-22）【W3 开放场景】：① 格式标识换代 `scene-space-designer-scene` —— `walls[].role` 可选（exterior/interior，字段顺序固定在 openings 之后、有值才写），旧标识全部留只读兼容（导入后按 legacy 语义算房间，旧方案房间数不许变），导出写新标识；② 新增 6 条：`scheme-roundtrip-wall-role`（role 与门洞同墙往返逐字节一致）、`wall-exterior-float-offset-ok` / `wall-exterior-poking-out`（⭐ 成对：外墙 1e-6 容差**不是**整条跳过 —— 旧 Java 侧跳过整面墙，这一对把它钉住）、`wall-role-exterior-tolerance` / `wall-role-interior-no-tolerance`（⭐ 成对：role 是语义不是豁免，内外墙容差各按角色判）、`room-resize-keeps-wall-role`（外墙重建之后角色不许丢）。",
+  "catalog": {
+    "demo-cabinet-800": {
+      "w": 1.15192501,
+      "d": 1.09483496,
+      "h": 1.98669948,
+      "doors": [
+        {
+          "node": "outer_door",
+          "axis": "y",
+          "openAngleDeg": 106,
+          "hinge": {
+            "x": 0.56298,
+            "y": 1.22,
+            "z": 0.42566
+          },
+          "leaf": {
+            "x0": -0.57596,
+            "x1": 0.57193,
+            "z0": 0.29557,
+            "z1": 0.54742
+          },
+          "swing": 1.14635
+        }
+      ]
+    },
+    "demo-freezer-dual": {
+      "w": 0.99,
+      "d": 0.8712,
+      "h": 1.98,
+      "doors": [
+        {
+          "node": "upper_door",
+          "axis": "y",
+          "openAngleDeg": 106,
+          "hinge": {
+            "x": 0.41748,
+            "y": 1.25119,
+            "z": 0.32944
+          },
+          "leaf": {
+            "x0": -0.44276,
+            "x1": 0.43939,
+            "z0": 0.2831,
+            "z1": 0.4356
+          },
+          "swing": 0.86676
+        }
+      ]
+    },
+    "demo-freezer-upright": {
+      "_envelopeNote": "声明包络（= 库里的 recipe_json，库里存 mm）→ 700×690×1000 mm；doors 是实测门几何（product_model.hinge_nodes）。",
+      "w": 0.7,
+      "d": 0.69,
+      "h": 1.0,
+      "doors": [
+        {
+          "node": "single_door",
+          "axis": "y",
+          "openAngleDeg": 106,
+          "hinge": {
+            "x": 0.30222,
+            "y": 0.41032,
+            "z": 0.2709
+          },
+          "leaf": {
+            "x0": -0.31281,
+            "x1": 0.30575,
+            "z0": 0.2656,
+            "z1": 0.34502
+          },
+          "swing": 0.61948
+        }
+      ]
+    },
+    "demo-freezer-chest": {
+      "_envelopeNote": "声明包络（= 库里的 recipe_json，库里存 mm）→ 1320×656×800 mm。旧的 735.075 / 646.866 / 1470.15 是**过时抄本**：实测门几何（doors）本来就是 1.32 这一套（leaf 宽 1.236 m），只有 w/d/h 抄错了。只有 door-clearance-lid-not-in-plan 用到它，而那条是结构判据（axis=x 不进平面），与尺寸无关 —— 所以改它不会动任何期望值。",
+      "w": 1.32,
+      "d": 0.656,
+      "h": 0.8,
+      "doors": [
+        {
+          "node": "top_lid",
+          "axis": "x",
+          "openAngleDeg": -88.81,
+          "hinge": {
+            "x": 0,
+            "y": 0.6831,
+            "z": -0.32354
+          },
+          "leaf": {
+            "x0": -0.61813,
+            "x1": 0.61813,
+            "z0": -0.328,
+            "z1": 0.328
+          },
+          "swing": 0.65438
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "validate-flush-wall-ok",
+      "rule": "validate",
+      "why": "FIX-04：贴墙摆放必须合法（原型把外墙当障碍，误报'碰墙'）",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [],
+      "item": {
+        "id": 1,
+        "p": "demo-cabinet-800",
+        "x": 0.576,
+        "z": 0.576,
+        "r": 0
+      },
+      "expect": {
+        "reason": null
+      }
+    },
+    {
+      "id": "validate-out-of-room",
+      "rule": "validate",
+      "why": "FIX-04 反向：探出墙外仍必须报错（校验不得被削弱）",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [],
+      "item": {
+        "id": 1,
+        "p": "demo-cabinet-800",
+        "x": 0.1,
+        "z": 0.5,
+        "r": 0
+      },
+      "expect": {
+        "reason": "out-of-room"
+      }
+    },
+    {
+      "id": "validate-hit-interior-wall",
+      "rule": "validate",
+      "why": "内墙是障碍物，压在上面必须报错",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            2,
+            2
+          ],
+          "b": [
+            2,
+            5
+          ]
+        }
+      ],
+      "items": [],
+      "item": {
+        "id": 1,
+        "p": "demo-cabinet-800",
+        "x": 2,
+        "z": 3.5,
+        "r": 0
+      },
+      "expect": {
+        "reason": "hit-wall"
+      }
+    },
+    {
+      "id": "validate-overlap-item",
+      "rule": "validate",
+      "why": "设备重叠要报出对方编号，供 UI 精准提示",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-cabinet-800",
+          "x": 0.7,
+          "z": 0.7,
+          "r": 0
+        }
+      ],
+      "item": {
+        "id": 3,
+        "p": "demo-cabinet-800",
+        "x": 1.6,
+        "z": 0.7,
+        "r": 0
+      },
+      "expect": {
+        "reason": "overlap-item#1"
+      }
+    },
+    {
+      "id": "room-resize-keeps-inner-walls",
+      "rule": "room-resize",
+      "why": "FIX-03：改尺寸必须保留仍在范围内的内墙（原型静默删除）",
+      "room": {
+        "w": 12,
+        "d": 9
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            12,
+            0
+          ]
+        },
+        {
+          "a": [
+            12,
+            0
+          ],
+          "b": [
+            12,
+            9
+          ]
+        },
+        {
+          "a": [
+            12,
+            9
+          ],
+          "b": [
+            0,
+            9
+          ]
+        },
+        {
+          "a": [
+            0,
+            9
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            2,
+            2
+          ],
+          "b": [
+            2,
+            7
+          ]
+        }
+      ],
+      "next": {
+        "w": 14,
+        "d": 11,
+        "h": 2.8
+      },
+      "expect": {
+        "ok": true,
+        "kept": 1,
+        "removed": 0,
+        "wallCount": 5,
+        "firstWall": {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            14,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "id": "room-resize-out-of-range",
+      "rule": "room-resize",
+      "why": "长宽 3–20 m 之外必须被拒",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "next": {
+        "w": 25,
+        "d": 6,
+        "h": 2.8
+      },
+      "expect": {
+        "ok": false,
+        "error": "长宽范围 3–20 m，墙高 2–5 m"
+      }
+    },
+    {
+      "id": "placement-auto-spot",
+      "rule": "placement",
+      "why": "自动摆位必须与原型同序（Z 优先、步长 0.7/1.2/1.1）",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [],
+      "product": "demo-cabinet-800",
+      "expect": {
+        "ok": true,
+        "x": 0.7,
+        "z": 0.7
+      }
+    },
+    {
+      "id": "placement-limit-100",
+      "rule": "placement",
+      "why": "FIX-06：第 101 台必须被拒（基线会堆到 103 台，然后自己导不回来）",
+      "room": {
+        "w": 20,
+        "d": 20
+      },
+      "walls": [],
+      "items": [],
+      "fillTo": 100,
+      "product": "demo-freezer-dual",
+      "expect": {
+        "ok": false,
+        "reason": "limit"
+      }
+    },
+    {
+      "id": "scheme-roundtrip-identical",
+      "rule": "scheme-roundtrip",
+      "why": "FIX-05：导出→导入→再导出 必须逐字节一致；写入端与读取端限制共源",
+      "room": {
+        "w": 14,
+        "d": 11,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            14,
+            0
+          ]
+        },
+        {
+          "a": [
+            14,
+            0
+          ],
+          "b": [
+            14,
+            11
+          ]
+        },
+        {
+          "a": [
+            14,
+            11
+          ],
+          "b": [
+            0,
+            11
+          ]
+        },
+        {
+          "a": [
+            0,
+            11
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            2,
+            2
+          ],
+          "b": [
+            2,
+            7
+          ]
+        }
+      ],
+      "items": [
+        {
+          "id": 4,
+          "p": "demo-cabinet-800",
+          "x": 0.7,
+          "z": 0.7,
+          "r": 0,
+          "doorAmount": 0
+        },
+        {
+          "id": 5,
+          "p": "demo-freezer-dual",
+          "x": 1.9,
+          "z": 0.7,
+          "r": 0,
+          "doorAmount": 0
+        },
+        {
+          "id": 6,
+          "p": "demo-freezer-dual",
+          "x": 3.1,
+          "z": 0.7,
+          "r": 90,
+          "doorAmount": 0
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "identical": true,
+        "nextId": 7,
+        "format": "scene-space-designer-scene-routes-columns"
+      }
+    },
+    {
+      "id": "scheme-accepts-legacy-v2-v3",
+      "rule": "scheme-accept",
+      "why": "用户手里已有旧版本导出的文件，必须继续能打开",
+      "formats": [
+        "legacy-spatial-v2",
+        "legacy-spatial-v3",
+        "scene-space-designer",
+        "scene-space-designer-openings",
+        "scene-space-designer-windows",
+        "scene-space-designer-scene"
+      ],
+      "expect": {
+        "allOk": true
+      }
+    },
+    {
+      "id": "scheme-typed-errors",
+      "rule": "scheme-errors",
+      "why": "FIX-21：不同失败原因要能分辨（原型 4 类共用一句话）",
+      "samples": [
+        {
+          "bad": "not-json",
+          "reason": "not-json"
+        },
+        {
+          "bad": "bad-format",
+          "reason": "bad-format"
+        },
+        {
+          "bad": "bad-room",
+          "reason": "bad-room"
+        },
+        {
+          "bad": "too-many-walls",
+          "reason": "too-many-walls"
+        },
+        {
+          "bad": "duplicate-id",
+          "reason": "duplicate-id"
+        },
+        {
+          "bad": "bad-wall",
+          "reason": "bad-wall"
+        }
+      ],
+      "expect": {
+        "exact": true
+      }
+    },
+    {
+      "id": "door-hinge-formula",
+      "rule": "door",
+      "why": "铰链旋转公式全项目唯一：rotation[axis] = openAngle × amount",
+      "hinge": {
+        "axis": "y",
+        "openAngle": 1.85
+      },
+      "amount": 0.5,
+      "expect": {
+        "rotation": {
+          "y": 0.925
+        }
+      }
+    },
+    {
+      "id": "collision-item-blocks",
+      "rule": "collision",
+      "why": "站在设备里必须判定被挡（FIX-17 卡死的成因，R3 要在此之上加脱困）",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        }
+      ],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-freezer-dual",
+          "x": 4,
+          "z": 3,
+          "r": 0
+        }
+      ],
+      "point": [
+        4,
+        3
+      ],
+      "expect": {
+        "blocked": true
+      }
+    },
+    {
+      "id": "collision-spawn-free",
+      "rule": "collision-spawn",
+      "why": "出生点必须保证可站立，否则漫游进入即卡死",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        }
+      ],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-freezer-dual",
+          "x": 4,
+          "z": 3,
+          "r": 0
+        }
+      ],
+      "expect": {
+        "spawnIsFree": true
+      }
+    },
+    {
+      "id": "door-clearance-open-ok",
+      "rule": "door-clearance",
+      "why": "接缝 A（A3）：空旷房间里门能开到底 → 绿灯",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-cabinet-800",
+          "x": 2,
+          "z": 2,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "item": {
+        "id": 1
+      },
+      "expect": {
+        "freeDeg": 106,
+        "level": "ok",
+        "unobstructed": true,
+        "blockedKind": null,
+        "blockedId": null
+      }
+    },
+    {
+      "id": "door-clearance-blocked-by-item",
+      "rule": "door-clearance",
+      "why": "门前方 0.4 m 有邻柜：能开但被挡 → 黄灯/红灯并指名撞到谁",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-cabinet-800",
+          "x": 2,
+          "z": 2,
+          "r": 0,
+          "doorAmount": 0
+        },
+        {
+          "id": 2,
+          "p": "demo-freezer-dual",
+          "x": 2,
+          "z": 3.35,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "item": {
+        "id": 1
+      },
+      "expect": {
+        "freeDeg": 19,
+        "level": "bad",
+        "unobstructed": false,
+        "blockedKind": "item",
+        "blockedId": 2
+      }
+    },
+    {
+      "id": "door-clearance-blocked-hard",
+      "rule": "door-clearance",
+      "why": "邻柜贴到门前：连关门位（0°）都撞 → 打不开。注意 freeDeg=0 时**占地本身也已经重叠**（关门位的门板落在设备占地框内），所以净空规则真正独立贡献的区间是 (0, maxDeg]",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-cabinet-800",
+          "x": 2,
+          "z": 2,
+          "r": 0,
+          "doorAmount": 0
+        },
+        {
+          "id": 2,
+          "p": "demo-freezer-dual",
+          "x": 2,
+          "z": 2.6,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "item": {
+        "id": 1
+      },
+      "expect": {
+        "freeDeg": 0,
+        "level": "bad",
+        "unobstructed": false,
+        "blockedKind": "item",
+        "blockedId": 2
+      }
+    },
+    {
+      "id": "door-clearance-blocked-by-interior-wall",
+      "rule": "door-clearance",
+      "why": "内墙横在门前 1 m：门板扫到内墙，与撞设备同一口径",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            1,
+            3
+          ],
+          "b": [
+            4,
+            3
+          ]
+        }
+      ],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-cabinet-800",
+          "x": 2,
+          "z": 2,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "item": {
+        "id": 1
+      },
+      "expect": {
+        "freeDeg": 20,
+        "level": "bad",
+        "unobstructed": false,
+        "blockedKind": "wall",
+        "blockedId": null
+      }
+    },
+    {
+      "id": "door-clearance-lid-not-in-plan",
+      "rule": "door-clearance",
+      "why": "上盖（绕水平轴）不参与平面净空：往竖直方向扫，平面上不占地方",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-freezer-chest",
+          "x": 2,
+          "z": 2,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "item": {
+        "id": 1
+      },
+      "expect": {
+        "freeDeg": null,
+        "level": "n/a",
+        "unobstructed": false,
+        "blockedKind": null,
+        "blockedId": null
+      }
+    },
+    {
+      "id": "door-clearance-outer-wall",
+      "rule": "door-clearance",
+      "why": "门顶到外墙：外墙与房间边界同一口径（不重复算两次）",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-cabinet-800",
+          "x": 2,
+          "z": 5.6,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "item": {
+        "id": 1
+      },
+      "expect": {
+        "freeDeg": 0,
+        "level": "bad",
+        "unobstructed": false,
+        "blockedKind": "room",
+        "blockedId": null
+      }
+    },
+    {
+      "id": "door-clearance-rotated-180-free",
+      "rule": "door-clearance",
+      "why": "转 180° 后门朝屋内：同样不受阻（旋转口径与 corners() 一致）",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-freezer-dual",
+          "x": 2,
+          "z": 5.6,
+          "r": 180,
+          "doorAmount": 0
+        }
+      ],
+      "item": {
+        "id": 1
+      },
+      "expect": {
+        "freeDeg": 106,
+        "level": "ok",
+        "unobstructed": true,
+        "blockedKind": null,
+        "blockedId": null
+      }
+    },
+    {
+      "id": "door-clearance-warn-level",
+      "rule": "door-clearance",
+      "why": "可开角度落在 60°~90°：黄灯（90° 阈值由用户 2026-09-21 拍板 —— \"门要能开到底才叫能用\"）",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-cabinet-800",
+          "x": 2,
+          "z": 2,
+          "r": 0,
+          "doorAmount": 0
+        },
+        {
+          "id": 2,
+          "p": "demo-freezer-dual",
+          "x": 2,
+          "z": 3.92,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "item": {
+        "id": 1
+      },
+      "expect": {
+        "freeDeg": 62,
+        "level": "warn",
+        "unobstructed": false,
+        "blockedKind": "item",
+        "blockedId": 2
+      }
+    },
+    {
+      "id": "placement-auto-spot-demo-freezer-upright",
+      "rule": "placement",
+      "why": "真目录第 4 款（demo-freezer-upright）必须能被服务端摆下 —— 曾经「界面能摆、服务端报 bad-item」就是因为内核目录只有 3 款。刻意**只断 ok**：尺寸是库里的，改尺寸不该让这条变红（那是别的用例的事）。",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [],
+      "items": [],
+      "product": "demo-freezer-upright",
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "id": "scheme-roundtrip-demo-freezer-upright",
+      "rule": "scheme-roundtrip",
+      "why": "真目录第 4 款也要能 导出→导入→再导出 逐字节一致（也是「每一款都被用例用过」的覆盖证据）",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        }
+      ],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-freezer-upright",
+          "x": 1.5,
+          "z": 1.5,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "expect": {
+        "ok": true,
+        "identical": true,
+        "nextId": 2,
+        "format": "scene-space-designer-scene-routes-columns"
+      }
+    },
+    {
+      "id": "wall-out-of-room",
+      "rule": "validate-wall",
+      "why": "B19：墙的端点必须落在房间内。外墙跳过（它就是边界本身），但**一端贴边、另一端探出去**的墙不豁免 —— 粗粒度实现会把这种也放过",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            2,
+            2
+          ],
+          "b": [
+            6,
+            2
+          ]
+        },
+        {
+          "a": [
+            2,
+            4
+          ],
+          "b": [
+            6,
+            4
+          ]
+        },
+        {
+          "a": [
+            7.5,
+            3
+          ],
+          "b": [
+            8.5,
+            3
+          ]
+        },
+        {
+          "a": [
+            0,
+            3
+          ],
+          "b": [
+            -1,
+            3
+          ]
+        },
+        {
+          "a": [
+            9,
+            3
+          ],
+          "b": [
+            9,
+            6
+          ]
+        }
+      ],
+      "expect": {
+        "badWalls": [
+          {
+            "index": 3,
+            "reason": "wall-out-of-room"
+          },
+          {
+            "index": 4,
+            "reason": "wall-out-of-room"
+          },
+          {
+            "index": 5,
+            "reason": "wall-out-of-room"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wall-boundary-exempt",
+      "rule": "validate-wall",
+      "why": "贴着房间四条边的墙不是越界（它就是边界）；一端贴边、另一端在房间里的内墙也不越界",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            3
+          ],
+          "b": [
+            4,
+            3
+          ]
+        }
+      ],
+      "expect": {
+        "badWalls": []
+      }
+    },
+    {
+      "id": "scheme-roundtrip-wall-style",
+      "rule": "scheme-roundtrip",
+      "why": "视图档位（solid/half/light）必须**进方案**并且原样存回来 —— 交付图是浏览器现画的，档位丢了则同一次交付谁点导出都不一样",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        }
+      ],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-cabinet-800",
+          "x": 1.2,
+          "z": 1.2,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "view": {
+        "wallOpacity": "half"
+      },
+      "expect": {
+        "ok": true,
+        "identical": true,
+        "styleOut": "half",
+        "nextId": 2,
+        "format": "scene-space-designer-scene-routes-columns"
+      }
+    },
+    {
+      "id": "scheme-roundtrip-wall-style-unknown",
+      "rule": "scheme-roundtrip",
+      "why": "认不得的档位两侧都当没写（不报错、不猜、不回就近值）—— 未来版本的档位不该让一份合法方案打不开",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        }
+      ],
+      "items": [
+        {
+          "id": 1,
+          "p": "demo-cabinet-800",
+          "x": 1.2,
+          "z": 1.2,
+          "r": 0,
+          "doorAmount": 0
+        }
+      ],
+      "view": {
+        "wallOpacity": "neon"
+      },
+      "expect": {
+        "ok": true,
+        "identical": true,
+        "styleOut": null,
+        "nextId": 2,
+        "format": "scene-space-designer-scene-routes-columns"
+      }
+    },
+    {
+      "id": "validate-wall-diagonal-ok",
+      "rule": "validate-wall",
+      "why": "斜墙（两点之间的直墙）合法，而且斜墙的**端点**同样要落在房间内 —— 内核的墙矩形本来就按角度构造，这条把「与角度无关」钉住",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            1,
+            1
+          ],
+          "b": [
+            5,
+            4
+          ]
+        },
+        {
+          "a": [
+            1,
+            5
+          ],
+          "b": [
+            5,
+            7
+          ]
+        }
+      ],
+      "expect": {
+        "badWalls": [
+          {
+            "index": 5,
+            "reason": "wall-out-of-room"
+          }
+        ]
+      }
+    },
+    {
+      "id": "room-resize-keeps-diagonal",
+      "rule": "room-resize",
+      "why": "改房间尺寸时，斜墙的保留判据要**四个坐标全比**（原型只比 x/z 的下界与 xx/zz 的上界，「另一头越界」会漏过去）",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            1,
+            1
+          ],
+          "b": [
+            5,
+            4
+          ]
+        },
+        {
+          "a": [
+            1,
+            5
+          ],
+          "b": [
+            9,
+            5
+          ]
+        }
+      ],
+      "next": {
+        "w": 6,
+        "d": 6,
+        "h": 2.8
+      },
+      "expect": {
+        "ok": true,
+        "kept": 1,
+        "removed": 1,
+        "wallCount": 5,
+        "firstWall": {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            6,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "id": "collision-opening-passable",
+      "rule": "collision",
+      "why": "门洞是**能走过去**的：墙在洞口处不再挡人（W1）。判据与下一条成对 —— 少了它，\"洞没挖开\"也会全绿",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            2,
+            1
+          ],
+          "b": [
+            2,
+            5
+          ],
+          "openings": [
+            {
+              "at": 2,
+              "w": 0.9,
+              "h": 2.1
+            }
+          ]
+        }
+      ],
+      "items": [],
+      "point": [
+        2,
+        3
+      ],
+      "expect": {
+        "blocked": false
+      }
+    },
+    {
+      "id": "collision-opening-jamb-blocks",
+      "rule": "collision",
+      "why": "成对的另一半：洞口**旁边**的墙身照旧挡人（0.15 m 在安全距离 0.30 m 之内）—— 少了它，\"整面墙被挖空\"也会全绿",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            2,
+            1
+          ],
+          "b": [
+            2,
+            5
+          ],
+          "openings": [
+            {
+              "at": 2,
+              "w": 0.9,
+              "h": 2.1
+            }
+          ]
+        }
+      ],
+      "items": [],
+      "point": [
+        2,
+        2.4
+      ],
+      "expect": {
+        "blocked": true
+      }
+    },
+    {
+      "id": "collision-window-blocks",
+      "rule": "collision",
+      "why": "⭐ 窗**不能走人**：窗洞正中照旧挡人（W2）。与下一条 `collision-door-mirror-passes` 成对 —— 两条的墙、点位、`at/w/h` 逐字相同，只差窗多出来的那两个字段。 少了这一条，「窗也被挖空了」会全绿，而界面上完全看不出来（墙上有洞、看着对）",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            2,
+            1
+          ],
+          "b": [
+            2,
+            5
+          ],
+          "openings": [
+            {
+              "at": 2,
+              "w": 1.2,
+              "h": 1.5,
+              "kind": "window",
+              "sill": 0.9
+            }
+          ]
+        }
+      ],
+      "items": [],
+      "point": [
+        2,
+        3
+      ],
+      "expect": {
+        "blocked": true
+      }
+    },
+    {
+      "id": "collision-door-mirror-passes",
+      "rule": "collision",
+      "why": "成对的另一半（**同一面墙、同一个点位**，只有洞口类别不同）：门洞在那儿是能走过去的 —— 少了它，「窗挡住了人」可以靠「整面墙根本没建/被挖空」蒙过去",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            2,
+            1
+          ],
+          "b": [
+            2,
+            5
+          ],
+          "openings": [
+            {
+              "at": 2,
+              "w": 1.2,
+              "h": 1.5
+            }
+          ]
+        }
+      ],
+      "items": [],
+      "point": [
+        2,
+        3
+      ],
+      "expect": {
+        "blocked": false
+      }
+    },
+    {
+      "id": "scheme-roundtrip-openings",
+      "rule": "scheme-roundtrip",
+      "why": "带门洞的方案必须**导出→导入→再导出**逐字节一致，而且门洞一个都不许丢（服务端 stateOf 是字段白名单，漏一个字段就会在保存/分享/交付链上无警告消失 —— FIX-05 的病因）",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ],
+          "openings": [
+            {
+              "at": 4,
+              "w": 1.2,
+              "h": 2.1
+            }
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        }
+      ],
+      "items": [],
+      "expect": {
+        "ok": true,
+        "identical": true,
+        "openingCount": 1,
+        "nextId": 1,
+        "format": "scene-space-designer-scene-routes-columns"
+      }
+    },
+    {
+      "id": "scheme-roundtrip-window",
+      "rule": "scheme-roundtrip",
+      "why": "带**窗**的方案必须导出→导入→再导出逐字节一致：`kind`/`sill` 在服务端 `stateOf` 的字段白名单上漏一个，窗就会在保存/分享/交付链上无警告消失**或者被当成门**（FIX-05 的病因）。`identical` 顺带钉住「窗没有被降级成落地洞」——降级会改变字节",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ],
+          "openings": [
+            {
+              "at": 4,
+              "w": 1.2,
+              "h": 1.5,
+              "kind": "window",
+              "sill": 0.9
+            }
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        }
+      ],
+      "items": [],
+      "expect": {
+        "ok": true,
+        "identical": true,
+        "openingCount": 1,
+        "nextId": 1,
+        "format": "scene-space-designer-scene-routes-columns"
+      }
+    },
+    {
+      "id": "scheme-roundtrip-room-labels",
+      "rule": "scheme-roundtrip",
+      "why": "房间名（M1a）必须**导出→导入→再导出**逐字节一致，而且一个名字都不许丢（服务端 stateOf 是字段白名单，漏掉 roomLabels 就会在保存/分享/交付链上无警告消失 —— 与门洞同一处风险）",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            4,
+            0
+          ],
+          "b": [
+            4,
+            6
+          ]
+        }
+      ],
+      "items": [],
+      "roomLabels": {
+        "h6xjvy": "冰箱间",
+        "1pb6owk": "离心机房"
+      },
+      "expect": {
+        "ok": true,
+        "identical": true,
+        "roomLabelCount": 2,
+        "nextId": 1,
+        "format": "scene-space-designer-scene-routes-columns"
+      }
+    },
+    {
+      "id": "room-resize-keeps-openings",
+      "rule": "room-resize",
+      "why": "内墙上的门洞在改房间尺寸时**随墙一起走**（墙是对象，门洞是它的字段）—— 静默丢掉就是丢数据",
+      "room": {
+        "w": 12,
+        "d": 9,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            12,
+            0
+          ]
+        },
+        {
+          "a": [
+            12,
+            0
+          ],
+          "b": [
+            12,
+            9
+          ]
+        },
+        {
+          "a": [
+            12,
+            9
+          ],
+          "b": [
+            0,
+            9
+          ]
+        },
+        {
+          "a": [
+            0,
+            9
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            2,
+            2
+          ],
+          "b": [
+            2,
+            7
+          ],
+          "openings": [
+            {
+              "at": 2.5,
+              "w": 0.9,
+              "h": 2.1
+            }
+          ]
+        }
+      ],
+      "items": [],
+      "next": {
+        "w": 14,
+        "d": 9,
+        "h": 2.8
+      },
+      "expect": {
+        "ok": true,
+        "kept": 1,
+        "removed": 0,
+        "wallCount": 5,
+        "openingsKept": 1,
+        "openingsDropped": 0
+      }
+    },
+    {
+      "id": "room-resize-window-kept",
+      "rule": "room-resize",
+      "why": "内墙上的**窗**在改房间尺寸时随墙一起走，而且**不许降级成落地洞** —— `windowCount` 就是钉这一条的：只数洞口个数的话，窗被降级成门照样是 1（设计决策记录第 4 处窄门，也是最难发现的一处）",
+      "room": {
+        "w": 12,
+        "d": 9,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            12,
+            0
+          ]
+        },
+        {
+          "a": [
+            12,
+            0
+          ],
+          "b": [
+            12,
+            9
+          ]
+        },
+        {
+          "a": [
+            12,
+            9
+          ],
+          "b": [
+            0,
+            9
+          ]
+        },
+        {
+          "a": [
+            0,
+            9
+          ],
+          "b": [
+            0,
+            0
+          ]
+        },
+        {
+          "a": [
+            2,
+            2
+          ],
+          "b": [
+            2,
+            7
+          ],
+          "openings": [
+            {
+              "at": 2.5,
+              "w": 1.2,
+              "h": 1.5,
+              "kind": "window",
+              "sill": 0.9
+            }
+          ]
+        }
+      ],
+      "items": [],
+      "next": {
+        "w": 14,
+        "d": 9,
+        "h": 2.8
+      },
+      "expect": {
+        "ok": true,
+        "kept": 1,
+        "removed": 0,
+        "wallCount": 5,
+        "openingsKept": 1,
+        "openingsDropped": 0,
+        "windowCount": 1
+      }
+    },
+    {
+      "id": "room-resize-drops-exterior-opening",
+      "rule": "room-resize",
+      "why": "外墙是**重建**的：搬过去放不下的门洞要如实报删（`openingsDropped`）—— 许静默丢就是许丢数据",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ],
+          "openings": [
+            {
+              "at": 3.6,
+              "w": 0.9,
+              "h": 2.1
+            }
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ]
+        }
+      ],
+      "items": [],
+      "next": {
+        "w": 4,
+        "d": 6,
+        "h": 2.8
+      },
+      "expect": {
+        "ok": true,
+        "kept": 0,
+        "removed": 0,
+        "wallCount": 4,
+        "openingsKept": 0,
+        "openingsDropped": 1
+      }
+    },
+    {
+      "id": "scheme-roundtrip-stale-room-label",
+      "rule": "scheme-roundtrip",
+      "why": "M1a 房间名：暂时对不上房间的名字（界面说「在等房间」）**不许在导出时被静默丢掉** —— 名字跟着几何 id 走，墙改回去名字就回来。同时钉住 JS 与 Java 的镜像：这条规则**不许依赖面遍历**（Java 侧没有房间算法），否则两边导出的字节会分叉。",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [0, 0],
+          "b": [8, 0]
+        },
+        {
+          "a": [8, 0],
+          "b": [8, 6]
+        },
+        {
+          "a": [8, 6],
+          "b": [0, 6]
+        },
+        {
+          "a": [0, 6],
+          "b": [0, 0]
+        },
+        {
+          "a": [4, 0],
+          "b": [4, 6]
+        }
+      ],
+      "items": [],
+      "roomLabels": {
+        "h6xjvy": "冷藏间",
+        "zzzzzzz": "等在等"
+      },
+      "expect": {
+        "ok": true,
+        "identical": true,
+        "roomLabelCount": 2,
+        "nextId": 1,
+        "format": "scene-space-designer-scene-routes-columns"
+      }
+    },
+    {
+      "id": "scheme-roundtrip-wall-role",
+      "rule": "scheme-roundtrip",
+      "why": "W3：墙的角色（exterior / interior）是**持久化语义**，必须进方案并在 导出→导入→再导出 上逐字节一致 —— 服务端 stateOf 是字段白名单，漏掉 role 会让墙在保存/分享/交付链上无警告地退回「按几何猜」，用户下次打开时同一面墙挡不挡设备就变了（FIX-05 同一形状）。同一条里带一个门洞，顺带钉住字段顺序 a,b,openings?,role?",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ],
+          "openings": [
+            {
+              "at": 4,
+              "w": 1.2,
+              "h": 2.1
+            }
+          ],
+          "role": "exterior"
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ],
+          "role": "exterior"
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ],
+          "role": "exterior"
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ],
+          "role": "exterior"
+        },
+        {
+          "a": [
+            2,
+            2
+          ],
+          "b": [
+            2,
+            5
+          ],
+          "role": "interior"
+        }
+      ],
+      "items": [],
+      "expect": {
+        "ok": true,
+        "identical": true,
+        "openingCount": 1,
+        "nextId": 1,
+        "format": "scene-space-designer-scene-routes-columns"
+      }
+    },
+    {
+      "id": "wall-exterior-float-offset-ok",
+      "rule": "validate-wall",
+      "why": "外墙坐标本来就恰好是 0 / w / d，浮点会让它差 1e-16 → 外墙给 1e-6 容差。这条钉住「贴边外墙不会因为浮点残差被判越界」；容差**不是**无限宽由下一对 wall-exterior-poking-out 钉住（只多探 0.5 m 就必须报）",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8.0000001,
+            0
+          ]
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6.0000001
+          ]
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            8,
+            6
+          ]
+        },
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            0,
+            6
+          ]
+        },
+        {
+          "a": [
+            2,
+            2
+          ],
+          "b": [
+            2,
+            5
+          ]
+        }
+      ],
+      "expect": {
+        "badWalls": []
+      }
+    },
+    {
+      "id": "wall-exterior-poking-out",
+      "rule": "validate-wall",
+      "why": "⭐ 与 wall-exterior-float-offset-ok 成对：一头贴着外墙那条线、另一头探出去 0.5 m 的墙**必须报**。旧 Java 侧对「外墙」整条跳过 —— 这种墙会被判成合法，而 JS 写端/读端调的是同一个带容差的函数（保存能过、导入却拒绝，正是 FIX-05 的形状）",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ]
+        },
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8.5,
+            0
+          ]
+        }
+      ],
+      "expect": {
+        "badWalls": [
+          {
+            "index": 1,
+            "reason": "wall-out-of-room"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wall-role-exterior-tolerance",
+      "rule": "validate-wall",
+      "why": "role 是语义、不是豁免：标了 exterior 的墙仍按外墙容差（1e-6）判，探出去照样报 —— 角色不许把越界判据变松",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8.5,
+            0
+          ],
+          "role": "exterior"
+        }
+      ],
+      "expect": {
+        "badWalls": [
+          {
+            "index": 0,
+            "reason": "wall-out-of-room"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wall-role-interior-no-tolerance",
+      "rule": "validate-wall",
+      "why": "⭐ 与 wall-role-exterior-tolerance 成对：标了 interior 的贴边墙按内墙判、没有容差，探出 1e-7 也报 —— 「角色优先于几何」在这里第一次被机器钉住；按几何旧判据会把它当外墙而放过",
+      "room": {
+        "w": 8,
+        "d": 6
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            1
+          ],
+          "b": [
+            8.0000001,
+            1
+          ],
+          "role": "interior"
+        }
+      ],
+      "expect": {
+        "badWalls": [
+          {
+            "index": 0,
+            "reason": "wall-out-of-room"
+          }
+        ]
+      }
+    },
+    {
+      "id": "room-resize-keeps-wall-role",
+      "rule": "room-resize",
+      "why": "改房间尺寸时外墙是**重建**的，但重建 ≠ 换身份：旧外墙标了 exterior 的，重建之后同一面还是 exterior。firstWall 两侧读同一条记录（JS 是墙对象、Java 是 wallJson），漏了角色就会在这里对不上 —— 用户改一次尺寸，墙的语义不许静默退回「按几何猜」",
+      "room": {
+        "w": 8,
+        "d": 6,
+        "h": 2.8
+      },
+      "walls": [
+        {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            8,
+            0
+          ],
+          "role": "exterior"
+        },
+        {
+          "a": [
+            8,
+            0
+          ],
+          "b": [
+            8,
+            6
+          ],
+          "role": "exterior"
+        },
+        {
+          "a": [
+            8,
+            6
+          ],
+          "b": [
+            0,
+            6
+          ],
+          "role": "exterior"
+        },
+        {
+          "a": [
+            0,
+            6
+          ],
+          "b": [
+            0,
+            0
+          ],
+          "role": "exterior"
+        },
+        {
+          "a": [
+            2,
+            2
+          ],
+          "b": [
+            2,
+            5
+          ],
+          "role": "interior"
+        }
+      ],
+      "items": [],
+      "next": {
+        "w": 10,
+        "d": 8,
+        "h": 2.8
+      },
+      "expect": {
+        "ok": true,
+        "kept": 1,
+        "removed": 0,
+        "wallCount": 5,
+        "firstWall": {
+          "a": [
+            0,
+            0
+          ],
+          "b": [
+            10,
+            0
+          ],
+          "role": "exterior"
+        }
+      }
+    }
+  ]
+}
